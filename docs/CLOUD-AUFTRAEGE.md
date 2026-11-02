@@ -1,14 +1,15 @@
-# Cloud-Aufträge (bereit zum Start)
+# Cloud-Aufträge
 
-Drei parallele Cloud-Sitzungen, je eigener Branch und Pull Request gegen `main`. Jede Sitzung liest zuerst `docs/ARCHITEKTUR.md` (verbindlich), `docs/RECHERCHE.md` und `docs/Bodenschutz-Austria-Praesentation.md`. Kein Paket fasst die Ordner der anderen an.
+**WICHTIG, Stand 2.11.2026 nachmittags: Auftrag 1 (Regel-Engine und Backend) und Auftrag 3 (Expo-App) sind FERTIG und liegen auf `main`. Auftrag 2 (Website) wird gerade in einer lokalen Sitzung gebaut. Eine Cloud-Sitzung baut diese drei NICHT noch einmal und startet keine weiteren Sitzungen dafür. Offen und sofort startbar ist nur Auftrag 4 (Deployment). Wer diese Datei als Auftrag bekommt, macht ausschließlich Auftrag 4 auf Branch `feat/deploy`.**
 
-| Sitzung | Ordner | Branch | Ergebnis |
-|---|---|---|---|
-| Regel-Engine und Backend | `packages/rules`, `apps/api` | `feat/api` | Fastify-API mit SQLite, KI, PDF, SMTP/IMAP, Tests, CI |
-| Website, Design, Verwaltung | `apps/web` | `feat/web` | Next.js-Site mit Top-Design, Assistent, Chat, Recht, SEO, `/admin` |
-| Expo-App | `apps/mobile` | `feat/mobile` | Android/iOS-App mit Foto, Rechner, Anfrage, Chat, EAS-Profile |
+| Auftrag | Ordner | Stand |
+|---|---|---|
+| 1 Regel-Engine und Backend | `packages/rules`, `apps/api` | fertig auf main, 65 Tests grün |
+| 2 Website, Design, Verwaltung | `apps/web` | läuft lokal, nicht anfassen |
+| 3 Expo-App | `apps/mobile` | fertig auf main |
+| 4 Deployment, Server-Setup, Betrieb | `deploy/`, Dockerfiles, `docs/BETRIEB.md` | offen, jetzt starten |
 
-Danach: Integrationslauf (alles zusammen starten, Ablauf Ende zu Ende prüfen, README, Android-APK über EAS).
+Jede Sitzung liest zuerst `docs/ARCHITEKTUR.md` (verbindlich), `docs/RECHERCHE.md` und `README.md`. Kein Auftrag fasst die Ordner der anderen an.
 
 ## Auftrag 1: Regel-Engine und Backend
 
