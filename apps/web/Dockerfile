@@ -34,13 +34,14 @@ ENV NODE_ENV=production \
     PORT=3000 \
     NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
-# Standalone-Ausgabe enthält server.js und die nötigen node_modules; static und public müssen daneben liegen
+# Standalone-Ausgabe: server.js und die nötigen node_modules liegen direkt in .next/standalone
+# (apps/web hat eine eigene package-lock.json, daher kein Monorepo-Tracing); static und public daneben kopieren.
 COPY --from=build --chown=node:node /app/apps/web/.next/standalone ./
-COPY --from=build --chown=node:node /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=build --chown=node:node /app/apps/web/public ./apps/web/public
+COPY --from=build --chown=node:node /app/apps/web/.next/static ./.next/static
+COPY --from=build --chown=node:node /app/apps/web/public ./public
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD curl -fsS -o /dev/null http://127.0.0.1:3000/ || exit 1
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "apps/web/server.js"]
+CMD ["node", "server.js"]

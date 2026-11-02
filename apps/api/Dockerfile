@@ -41,6 +41,8 @@ COPY --from=rules /app/packages/rules/dist /app/packages/rules/dist
 COPY --from=build /app/apps/api/package.json /app/apps/api/package.json
 COPY --from=build /app/apps/api/node_modules /app/apps/api/node_modules
 COPY --from=build /app/apps/api/prisma /app/apps/api/prisma
+# Quelltext wird für den Seed gebraucht (prisma/seed.ts importiert ../src/env.ts und läuft über tsx)
+COPY --from=build /app/apps/api/src /app/apps/api/src
 COPY --from=build /app/apps/api/dist /app/apps/api/dist
 COPY deploy/api-entrypoint.sh /usr/local/bin/api-entrypoint.sh
 RUN chmod +x /usr/local/bin/api-entrypoint.sh \
