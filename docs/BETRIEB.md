@@ -99,7 +99,7 @@ Wer alles unter einem Google-Konto haben will, legt statt eines Mietservers eine
 Für eine Testphase kann die ganze Seite hinter eine Passwortabfrage gelegt werden, auch unter einer Test-Subdomain (z. B. `DOMAIN=test.bodenschutz-austria.at`, DNS-A-Eintrag dafür anlegen; der `www.`-Eintrag ist dann nicht nötig, Caddy protokolliert nur, dass es dafür kein Zertifikat bekommt).
 
 1. Hash erzeugen: `docker run --rm caddy:2-alpine caddy hash-password --plaintext 'DEIN-PASSWORT'`
-2. In der `.env`: `BASIC_AUTH_USER=mario` und `BASIC_AUTH_HASH=<Hash>` eintragen, dann `docker compose up -d caddy`.
+2. In der `.env`: `BASIC_AUTH_USER=mario` und `BASIC_AUTH_HASH=<Hash>` eintragen, dabei **jedes `$` im Hash verdoppeln** (`$2a$14$…` wird zu `$$2a$$14$$…`), sonst liest Docker Compose den Hash als Variablen und leert ihn. Dann `docker compose up -d caddy`.
 3. Browser fragt jetzt vor jeder Seite nach Benutzer und Passwort; Suchmaschinen bekommen `noindex`. Die Verwaltung hat zusätzlich ihren eigenen Login.
 4. Für den Livegang beide Variablen leeren und `docker compose up -d caddy`.
 

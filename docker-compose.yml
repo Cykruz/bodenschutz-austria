@@ -81,6 +81,7 @@ services:
       ADMIN_ALLOW_IPS: ${ADMIN_ALLOW_IPS:-0.0.0.0/0 ::/0}
       # Vorab-Zugang für den Testbetrieb (leer = Seite offen). Hash erzeugen:
       #   docker run --rm caddy:2-alpine caddy hash-password --plaintext 'DEIN-PASSWORT'
+      # In der .env jedes $ des Hashs als $$ schreiben (Compose-Interpolation).
       BASIC_AUTH_USER: ${BASIC_AUTH_USER:-}
       BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:-}
     # Legt bei gesetztem BASIC_AUTH_USER den Schnipsel für die Passwortabfrage an und startet dann Caddy

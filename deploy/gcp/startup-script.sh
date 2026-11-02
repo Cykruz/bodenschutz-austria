@@ -61,6 +61,8 @@ if [[ -n "${ANTHROPIC_API_KEY}" ]]; then
 fi
 if [[ -n "${DEMO_USER}" && -n "${DEMO_PASSWORD}" ]]; then
   HASH="$(docker run --rm caddy:2-alpine caddy hash-password --plaintext "${DEMO_PASSWORD}")"
+  # In der .env muss jedes $ als $$ stehen, sonst liest Docker Compose den Hash als Variablen und leert ihn
+  HASH="${HASH//\$/\$\$}"
   sed -i "s|^BASIC_AUTH_USER=.*|BASIC_AUTH_USER=${DEMO_USER}|" "${ENV_FILE}"
   sed -i "s|^BASIC_AUTH_HASH=.*|BASIC_AUTH_HASH=${HASH}|" "${ENV_FILE}"
   echo "[gcp-startup] Vorab-Zugang für ${DEMO_USER} gesetzt"
