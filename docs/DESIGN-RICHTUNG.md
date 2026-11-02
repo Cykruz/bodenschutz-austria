@@ -31,6 +31,22 @@ Kapitel der Startseite (Scroll-Reihenfolge):
 9. **Aufruf**: „Bereit? Dein Angebot in drei Minuten.“ mit Pille, Telefon.
 10. **Footer** mit Betreiberdaten, Rechtliches, KI-Hinweis, „Weiter scrollen: Anfrage starten“ als Übergang zu `/anfrage`.
 
+## Mini-Clips und Verspieltheit (Nachtrag)
+
+Der Nutzer will die Seite deutlich bewegter, verspielter und dadurch leichter verständlich. Statt Videodateien bauen wir **animierte Mini-Clips als Code** (CSS/SVG-Endlosschleifen, 8 bis 10 Sekunden, scharf auf jedem Bildschirm, wenige Kilobyte, pausierbar, respektieren `prefers-reduced-motion`). Drei Vorlagen liegen fertig im Design-Canvas (Artboards „Mini-Clip 01–03“) und werden in Website und App 1:1 nachgebaut:
+
+1. **Vom Foto zum Angebot** (8 s): Handy macht Foto (Blitz), Zahlen zählen hoch („120 m² → 46 Platten · 2 Paletten“), Umschlag fliegt zu Marios Posteingang, Haken „Freigeben“. Einsatz: Startseite Kapitel „So geht’s“, App-Startbildschirm, Seite `/app`.
+2. **Verlegen · Belasten · Aufnehmen** (9 s): Platten fallen nacheinander ein, LKW fährt drüber, Platten heben ab, Rasen wird grün. Einsatz: Fallback und Vorschau des gepinnten 3D-Kapitels, App-Infoseite.
+3. **Zwei Wege** (10 s): Umschlag fällt in den Sortierer „Feste Regeln prüfen die Angaben“, Weg A Standardfall (automatisch vorbereitet) oder Weg B Prüffall (Mario entscheidet). Einsatz: Verwaltung (Dashboard-Erklärung), Seite `/ki-hinweis`, FAQ „Spreche ich mit einer KI?“.
+
+Weitere verspielte Elemente, überall sparsam aber spürbar:
+- Zahlen zählen hoch (Platten, Paletten, Gewicht), wenn das Ergebnis erscheint.
+- Karten kippen leicht beim Hover (translateY −8 px, rotate −1°), Buttons wachsen auf 1.04.
+- Hero-Platten schweben langsam (6–8 s), Überschrift steigt zeilenweise auf, Scroll-Hinweis wippt, Chat-Button pulsiert in Terracotta.
+- Im Assistenten: Fortschrittsbalken animiert, Schrittwechsel als Slide, Foto-Analyse mit Scan-Linie, Ergebnis mit kurzem Konfetti aus Platten-Rauten (nur `transform`/`opacity`).
+- Chat: Tipp-Indikator mit drei Punkten, Nachrichten gleiten ein, KI-Badge blinkt einmal beim Öffnen.
+- Jede Animation hat eine Aufgabe (zeigt Reihenfolge, Zustand oder Erfolg); nichts bewegt sich nur zur Dekoration länger als eine Sekunde außer den Mini-Clips.
+
 ## Technik
 
 - `motion` (Framer Motion v12) für Split-Text, Reveals, Scroll-Transformationen; `lenis` für Smooth Scroll, mit `useReducedMotion` deaktiviert.
