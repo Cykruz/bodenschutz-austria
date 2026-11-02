@@ -29,6 +29,11 @@ www.{$DOMAIN} {
 		-X-Powered-By
 	}
 
+	# Optionaler Vorab-Zugang für den Testbetrieb (nur Mario und Techniker): BASIC_AUTH_USER und BASIC_AUTH_HASH in der .env setzen,
+	# der Container-Start legt dann /etc/caddy/gate.d/gate.caddy an (Passwortabfrage für alles außer /api/health, dazu noindex).
+	@gate not path /api/health
+	import /etc/caddy/gate.d/*.caddy
+
 	# Optionale IP-Allowlist für die Verwaltung (Seiten und Admin-API).
 	# ADMIN_ALLOW_IPS leer lassen (Standard "0.0.0.0/0 ::/0") = kein Filter, Login schützt.
 	@admin_blocked {

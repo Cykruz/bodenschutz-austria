@@ -79,6 +79,23 @@ services:
       ACME_EMAIL: ${ACME_EMAIL:-info@bodenschutz-austria.at}
       # Leer = Verwaltung von überall erreichbar (Login schützt). Mehrere Einträge mit Leerzeichen trennen, z. B. "203.0.113.5 198.51.100.0/24"
       ADMIN_ALLOW_IPS: ${ADMIN_ALLOW_IPS:-0.0.0.0/0 ::/0}
+      # Vorab-Zugang für den Testbetrieb (leer = Seite offen). Hash erzeugen:
+      #   docker run --rm caddy:2-alpine caddy hash-password --plaintext 'DEIN-PASSWORT'
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:-}
+      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:-}
+    # Legt bei gesetztem BASIC_AUTH_USER den Schnipsel für die Passwortabfrage an und startet dann Caddy
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /etc/caddy/gate.d
+        if [ -n "$$BASIC_AUTH_USER" ] && [ -n "$$BASIC_AUTH_HASH" ]; then
+          printf 'basic_auth @gate {\n\t%s %s\n}\nheader X-Robots-Tag "noindex, nofollow"\n' "$$BASIC_AUTH_USER" "$$BASIC_AUTH_HASH" > /etc/caddy/gate.d/gate.caddy
+          echo "Vorab-Zugang aktiv (Benutzer $$BASIC_AUTH_USER)"
+        else
+          rm -f /etc/caddy/gate.d/gate.caddy
+        fi
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

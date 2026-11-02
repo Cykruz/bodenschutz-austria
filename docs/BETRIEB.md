@@ -90,6 +90,17 @@ Der API-Container führt bei jedem Start `prisma db push` (Schema) und den Seed 
 
 Danach: `https://bodenschutz-austria.at/admin`, Login mit `ADMIN_EMAIL`/`ADMIN_PASSWORD`. Unter **Produkte** und **Frachtzonen** die echten Werte eintragen und „von Mario bestätigt“ anhaken.
 
+### A.5a Testbetrieb nur für Mario und Techniker (Vorab-Zugang)
+
+Für eine Testphase kann die ganze Seite hinter eine Passwortabfrage gelegt werden, auch unter einer Test-Subdomain (z. B. `DOMAIN=test.bodenschutz-austria.at`, DNS-A-Eintrag dafür anlegen; der `www.`-Eintrag ist dann nicht nötig, Caddy protokolliert nur, dass es dafür kein Zertifikat bekommt).
+
+1. Hash erzeugen: `docker run --rm caddy:2-alpine caddy hash-password --plaintext 'DEIN-PASSWORT'`
+2. In der `.env`: `BASIC_AUTH_USER=mario` und `BASIC_AUTH_HASH=<Hash>` eintragen, dann `docker compose up -d caddy`.
+3. Browser fragt jetzt vor jeder Seite nach Benutzer und Passwort; Suchmaschinen bekommen `noindex`. Die Verwaltung hat zusätzlich ihren eigenen Login.
+4. Für den Livegang beide Variablen leeren und `docker compose up -d caddy`.
+
+Die Handy-App kann in dieser Phase nicht gegen die geschützte API testen (sie sendet keine Passwortabfrage); dafür entweder `ADMIN_ALLOW_IPS` statt Vorab-Zugang nutzen oder den Vorab-Zugang nur kurz abschalten.
+
 ### A.6 Backups
 
 - Skript: `deploy/backup.sh`, läuft täglich 03:00 per Cron als Nutzer `bodenschutz`; Log in `/opt/bodenschutz/backups/backup.log`.
