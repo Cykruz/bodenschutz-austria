@@ -1,98 +1,117 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { ExplainerClip } from '@/components/motion/ExplainerClip';
+import { Screen } from '@/components/Screen';
+import { AppText, Body, Button, Card, InfoBanner, Small, Title } from '@/components/ui';
+import { colors, fonts, spacing } from '@/constants/theme';
+import { useInquiry } from '@/context/InquiryContext';
+import { api } from '@/lib/api';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+const STEPS = [
+  {
+    title: 'Vorhaben beschreiben',
+    text: 'Baustelle, Veranstaltung oder Paddock wählen. Ein Foto kann helfen, geht aber auch ohne.',
+  },
+  {
+    title: 'Maße bestätigen',
+    text: 'Fläche in Quadratmetern eingeben. Bei zwei Fahrspuren zählt die Länge der Strecke.',
+  },
+  {
+    title: 'Angebot anfordern',
+    text: 'Mengen ansehen, Kontakt und Lieferort ergänzen. Das Angebot folgt nach Prüfung.',
+  },
+];
+
+export default function StartScreen() {
+  const router = useRouter();
+  const { draft, reset } = useInquiry();
+  const hasDraft = !!draft.projectType;
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <Screen topInset>
+      <Card tone="dark" style={styles.hero}>
+        <View style={styles.logoRow}>
+          <View style={styles.logo}>
+            <AppText variant="subheading" color={colors.sand}>
+              BA
+            </AppText>
+          </View>
+          <Small color={colors.accent} style={styles.brand}>
+            Bodenschutz Austria
+          </Small>
+        </View>
+        <Title color={colors.sand}>Vom Foto zum Angebot.</Title>
+        <Body color={colors.sand}>
+          Beschreiben Sie Ihr Vorhaben, wir berechnen Platten und Paletten nach festen Regeln. Das Angebot folgt nach
+          persönlicher Prüfung.
+        </Body>
+      </Card>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <ExplainerClip />
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <View style={styles.steps}>
+        {STEPS.map((step, i) => (
+          <View key={step.title} style={styles.stepRow}>
+            <View style={styles.stepNumber}>
+              <AppText variant="bodyBold" color={colors.sand}>
+                {i + 1}
+              </AppText>
+            </View>
+            <View style={styles.stepText}>
+              <AppText variant="bodyBold">{step.title}</AppText>
+              <Small>{step.text}</Small>
+            </View>
+          </View>
+        ))}
+      </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      <Button
+        title={hasDraft ? 'Anfrage fortsetzen' : 'Anfrage starten'}
+        onPress={() => router.push('/anfrage/vorhaben')}
+        accessibilityHint="Öffnet den Anfrage-Assistenten"
+      />
+      {hasDraft ? <Button title="Entwurf verwerfen und neu starten" variant="ghost" onPress={reset} /> : null}
+      <Button title="Fragen an den Berater" variant="secondary" onPress={() => router.push('/chat')} />
+      <Button title="So funktioniert es" variant="ghost" onPress={() => router.push('/info')} />
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <InfoBanner
+        tone="warning"
+        title="Eine Anfrage ist noch keine Bestellung."
+        text="Ein Foto ersetzt keine Vermessung und keine Prüfung, ob der Boden tragfähig ist. Verlässliche Preise gibt es erst mit vollständigen, freigegebenen Daten."
+      />
+      {api.isMock ? (
+        <InfoBanner
+          tone="info"
+          text="Vorschau-Modus: Die App zeigt Beispieldaten, es wird nichts an einen Server gesendet."
+        />
+      ) : null}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
+  hero: { gap: spacing.md },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  logo: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
   },
-  title: {
-    textAlign: 'center',
+  brand: { fontFamily: fonts.bodyBold, letterSpacing: 0.5 },
+  steps: { gap: spacing.md, paddingVertical: spacing.sm },
+  stepRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
+  stepNumber: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.terracotta,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  stepText: { flex: 1, gap: 2 },
 });

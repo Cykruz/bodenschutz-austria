@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# EAS Submit Schlüssel
+google-service-account.json
