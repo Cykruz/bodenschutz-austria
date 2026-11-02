@@ -1,0 +1,26 @@
+{
+  "name": "bodenschutz-austria",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Bodenschutz Austria – Vom Foto zum Angebot: App, Backend, Website, KI-Berater und E-Mail-Automatik",
+  "scripts": {
+    "setup": "npm install && npm --prefix packages/rules install && npm --prefix packages/rules run build && npm --prefix apps/api install && npm --prefix apps/api run db:setup && npm --prefix apps/web install && npm --prefix apps/mobile install",
+    "dev": "concurrently -n api,web,mail -c green,blue,yellow \"npm --prefix apps/api run dev\" \"npm --prefix apps/web run dev\" \"maildev --smtp 1025 --web 1080\"",
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:mobile": "npm --prefix apps/mobile run start",
+    "mail": "maildev --smtp 1025 --web 1080",
+    "db:setup": "npm --prefix apps/api run db:setup",
+    "build": "npm --prefix packages/rules run build && npm --prefix apps/api run build && npm --prefix apps/web run build",
+    "test": "npm --prefix packages/rules test && npm --prefix apps/api test",
+    "typecheck": "npm --prefix packages/rules run typecheck && npm --prefix apps/api run typecheck && npm --prefix apps/web run typecheck && npm --prefix apps/mobile run typecheck"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "maildev": "^2.2.1",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
