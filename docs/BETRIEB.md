@@ -101,6 +101,17 @@ Für eine Testphase kann die ganze Seite hinter eine Passwortabfrage gelegt werd
 
 Die Handy-App kann in dieser Phase nicht gegen die geschützte API testen (sie sendet keine Passwortabfrage); dafür entweder `ADMIN_ALLOW_IPS` statt Vorab-Zugang nutzen oder den Vorab-Zugang nur kurz abschalten.
 
+### A.5b Demo parallel zur bestehenden WordPress-Seite
+
+Die bestehende Seite bodenschutz-austria.at liegt (Stand 2.11.2026) auf einem geteilten Webhosting bei world4you (Apache, Server `www37sni.world4you.com`). Dort lassen sich keine Node.js-Dienste oder Docker-Container betreiben; die neue Anwendung braucht deshalb immer einen eigenen kleinen Server (siehe A.1). Die WordPress-Seite bleibt davon komplett unberührt, es wird nur ein zusätzlicher DNS-Eintrag angelegt:
+
+1. Server nach A.3 einrichten, dabei `DOMAIN=demo.bodenschutz-austria.at` (oder `test.`) setzen.
+2. Im world4you-Kundenbereich unter *Domain → DNS-Einträge* einen **A-Record** `demo` auf die IP des neuen Servers anlegen (TTL kann klein bleiben, z. B. 300). Nichts Bestehendes ändern: `@` und `www` zeigen weiter auf WordPress, die Mail-Einträge (MX) bleiben.
+3. Vorab-Zugang nach A.5a einschalten, damit nur Mario und der Techniker die Demo sehen.
+4. Optional in WordPress einen Menüpunkt oder Button „Angebot anfragen“ auf `https://demo.bodenschutz-austria.at/anfrage` setzen; so lässt sich der Assistent schon aus der alten Seite heraus ausprobieren.
+
+Livegang später: In world4you `@` und `www` auf die IP des Servers umstellen und in der `.env` `DOMAIN=bodenschutz-austria.at` setzen (`docker compose up -d --build web caddy`). WordPress bleibt als Sicherung erreichbar, solange das Hosting läuft; Mails bleiben unverändert, weil die MX-Einträge nicht angefasst werden.
+
 ### A.6 Backups
 
 - Skript: `deploy/backup.sh`, läuft täglich 03:00 per Cron als Nutzer `bodenschutz`; Log in `/opt/bodenschutz/backups/backup.log`.
