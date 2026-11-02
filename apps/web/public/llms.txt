@@ -1,0 +1,25 @@
+# Bodenschutz Austria
+
+> Bodenschutzplatten aus 100 % Recycling-Kunststoff für Baustellen, Veranstaltungen und Paddocks in Österreich. Betreiber: Ari Schlemmer Handel & Tech-Consulting e.U., Westbahnstr. 21, 3362 Mauer/Amstetten, Tel. +43 660 7602201, info@bodenschutz-austria.at.
+
+Produkt: classicXtreme – Schwerlast-Bodenschutzplatte, hergestellt in der EU, Traglast über 40 Tonnen laut Hersteller. Maße, Gewicht, Platten je Palette und Preise auf der Website sind derzeit Platzhalter und werden vor dem Livebetrieb bestätigt.
+
+Grundsätze:
+- Eine Anfrage ist noch keine Bestellung.
+- Ein Foto ersetzt keine Vermessung und keine Prüfung der Tragfähigkeit.
+- Mengen und Preise kommen aus festen Regeln des Betreibers, nicht aus einer KI-Schätzung. Jedes Angebot wird von einem Menschen geprüft.
+- Der Berater-Chat ist ein KI-Assistent und als solcher gekennzeichnet (EU-KI-Verordnung Art. 50).
+
+## Seiten
+
+- [Startseite](/): Einsatzbereiche, Ablauf in drei Schritten, Produkt, FAQ
+- [Angebot anfragen](/anfrage): Online-Assistent in sechs Schritten (Vorhaben, Foto optional, Maße, Mengen, Kontakt, Senden)
+- [App](/app): App für Android und iPhone; alle Funktionen auch ohne App auf der Website
+- [KI-Hinweis](/ki-hinweis): Wo KI eingesetzt wird und was sie nicht entscheidet
+- [Datenschutz](/datenschutz): Datenverarbeitung, KI-Dienstleister Anthropic, Speicherdauer, Rechte
+- [Impressum](/impressum): Pflichtangaben des Betreibers
+
+## Nicht für Crawler
+
+- /admin (Verwaltung, Login erforderlich)
+- /api (Schnittstelle)

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Mini-Clip: Zwei Wege</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&family=Nunito+Sans:wght@600;700&display=swap">
+<style>
+body{margin:0;font-family:'Nunito Sans',Verdana,sans-serif;color:#1E3A2F}
+@keyframes mailA{0%{opacity:0;transform:translate(0,-60px)}6%{opacity:1;transform:translate(0,0)}22%{opacity:1;transform:translate(0,0)}34%{opacity:1;transform:translate(-150px,120px)}40%,100%{opacity:0;transform:translate(-150px,124px)}}
+@keyframes mailB{0%,50%{opacity:0;transform:translate(0,-60px)}56%{opacity:1;transform:translate(0,0)}72%{opacity:1;transform:translate(0,0)}84%{opacity:1;transform:translate(150px,120px)}90%,100%{opacity:0;transform:translate(150px,124px)}}
+@keyframes scanA{0%,8%{opacity:0}12%,20%{opacity:1}24%,100%{opacity:0}}
+@keyframes scanB{0%,58%{opacity:0}62%,70%{opacity:1}74%,100%{opacity:0}}
+@keyframes laneA{0%,30%{background:#F6F3EC}36%,46%{background:#DCE8D4}52%,100%{background:#F6F3EC}}
+@keyframes laneB{0%,80%{background:#F6F3EC}86%,96%{background:#FBE3CC}100%{background:#F6F3EC}}
+@keyframes tagA{0%,34%{opacity:0;transform:translateY(8px)}38%,48%{opacity:1;transform:translateY(0)}52%,100%{opacity:0}}
+@keyframes tagB{0%,84%{opacity:0;transform:translateY(8px)}88%,98%{opacity:1;transform:translateY(0)}100%{opacity:0}}
+.a{animation-duration:10s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.4,0,.2,1)}
+.mA{animation-name:mailA}.mB{animation-name:mailB}.sA{animation-name:scanA}.sB{animation-name:scanB}
+.lA{animation-name:laneA}.lB{animation-name:laneB}.tA{animation-name:tagA}.tB{animation-name:tagB}
+@media (prefers-reduced-motion: reduce){.a{animation:none}.mA{opacity:1;transform:translate(-150px,120px)}.mB{opacity:1;transform:translate(150px,120px)}.tA,.tB{opacity:1}}
+</style>
+</helmet>
+<div style="width:640px;height:400px;box-sizing:border-box;background:#F6F3EC;border:1px solid #E3DED2;border-radius:28px;padding:28px 32px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<p style="margin:0;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#B9621C">Mini-Clip 03 · 10 Sekunden</p>
+<p style="margin:0;font-family:'Nunito',Verdana,sans-serif;font-size:18px;font-weight:900">Jede Anfrage geht einen von zwei Wegen</p>
+</div>
+<div style="position:relative;flex:1">
+<!-- Sortierer -->
+<div style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:200px;height:84px;background:#1E3A2F;color:#F6F3EC;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#F0A85A">Feste Regeln</span><span style="font-family:'Nunito',Verdana,sans-serif;font-size:16px;font-weight:900">prüfen die Angaben</span></div>
+<svg style="position:absolute;left:50%;top:84px;transform:translateX(-50%)" width="420" height="120" viewBox="0 0 420 120" fill="none" aria-hidden="true"><path d="M210 0 C 210 60, 80 50, 70 116" stroke="#2F5A47" stroke-width="3" stroke-dasharray="6 8"/><path d="M210 0 C 210 60, 340 50, 350 116" stroke="#D97B2A" stroke-width="3" stroke-dasharray="6 8"/></svg>
+<!-- Post A -->
+<div class="a mA" style="position:absolute;left:50%;top:-50px;margin-left:-30px;width:60px;height:42px;background:#E6EDE3;border:2px solid #1E3A2F;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="36" height="26" viewBox="0 0 40 28" fill="none" stroke="#1E3A2F" stroke-width="2.5" aria-hidden="true"><rect x="2" y="2" width="36" height="24" rx="4"/><path d="M3 5l17 12L37 5"/></svg></div>
+<div class="a sA" style="position:absolute;left:50%;top:-74px;transform:translateX(-50%);font-size:12px;font-weight:700;background:#DCE8D4;color:#1E3A2F;padding:4px 10px;border-radius:999px;white-space:nowrap">vollständig · Standardfall</div>
+<!-- Post B -->
+<div class="a mB" style="position:absolute;left:50%;top:-50px;margin-left:-30px;width:60px;height:42px;background:#FBE3CC;border:2px solid #B9621C;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="36" height="26" viewBox="0 0 40 28" fill="none" stroke="#B9621C" stroke-width="2.5" aria-hidden="true"><rect x="2" y="2" width="36" height="24" rx="4"/><path d="M3 5l17 12L37 5"/></svg></div>
+<div class="a sB" style="position:absolute;left:50%;top:-74px;transform:translateX(-50%);font-size:12px;font-weight:700;background:#FBE3CC;color:#8F4A12;padding:4px 10px;border-radius:999px;white-space:nowrap">Miete gewünscht · Prüffall</div>
+<!-- Spur A -->
+<div class="a lA" style="position:absolute;left:0;bottom:0;width:270px;border-radius:20px;border:2px solid #2F5A47;padding:16px 18px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px">
+<p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F5A47">Weg A · Standardfall</p>
+<p style="margin:0;font-family:'Nunito',Verdana,sans-serif;font-size:18px;font-weight:900;line-height:1.1">Automatisch vorbereitet</p>
+<p style="margin:0;font-size:12px;color:#44524A">Angebotsentwurf liegt fertig bei Mario.</p>
+<span class="a tA" style="align-self:flex-start;font-size:11px;font-weight:700;background:#2F5A47;color:#F6F3EC;padding:4px 10px;border-radius:999px">Entwurf erstellt</span>
+</div>
+<!-- Spur B -->
+<div class="a lB" style="position:absolute;right:0;bottom:0;width:270px;border-radius:20px;border:2px solid #D97B2A;padding:16px 18px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px">
+<p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#B9621C">Weg B · Prüffall</p>
+<p style="margin:0;font-family:'Nunito',Verdana,sans-serif;font-size:18px;font-weight:900;line-height:1.1">Mario entscheidet</p>
+<p style="margin:0;font-size:12px;color:#44524A">Rückfrage oder persönliches Angebot.</p>
+<span class="a tB" style="align-self:flex-start;font-size:11px;font-weight:700;background:#D97B2A;color:#1E3A2F;padding:4px 10px;border-radius:999px">An Mario übergeben</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":640,"height":400}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
