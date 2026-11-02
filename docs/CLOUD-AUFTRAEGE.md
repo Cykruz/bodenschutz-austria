@@ -22,6 +22,19 @@ Design zuerst in Claude Design (Desktop 1440, Handy 390), falls verfügbar; sons
 
 Technik: Next.js App Router, Tailwind v4, motion, lucide-react; Rewrites `/api/*` auf die API; Security-Header mit CSP (Nonce), HSTS; `lib/api.ts`; Mock-Modus. Seiten: `/`, `/anfrage` (6 Schritte), `/anfrage/[id]`, KI-Chat-Panel mit Kennzeichnung und KI-Badge, `/app`, `/impressum` (ECG-Pflichtangaben, Betreiberdaten vorbelegt), `/datenschutz` (mit KI-Abschnitt), `/ki-hinweis`, sitemap, robots (KI-Crawler erlaubt, /admin gesperrt), llms.txt. Verwaltung `/admin`: Login, Dashboard mit Auto-Versand-Schalter, Anfragen mit Detail (Foto, Analyse, Mengen, Einstufung, KI-Entwurf, Freigeben und senden, Rückfrage, Ablehnen, PDF), Produkte, Frachtzonen, Regeln, Einstellungen, Posteingang, Protokoll. Build, Typecheck, Lint fehlerfrei.
 
+## Auftrag 4: Deployment, Server-Setup, Betrieb (überschneidet sich mit nichts, sofort startbar)
+
+Baue alles für den Livebetrieb auf einem eigenen Linux-Server, ohne die Anwendungsordner zu ändern (Ausnahme: `apps/api/Dockerfile`, `apps/web/Dockerfile`, je `.dockerignore`). Branch `feat/deploy`, PR gegen main. Lies zuerst `docs/ARCHITEKTUR.md`, `README.md`, `.env.example`, Root-`package.json` und den Stand von `apps/api`, `apps/web`, `packages/rules`.
+
+1. Dockerfiles (Multi-Stage, node:24-alpine): API baut zuerst `packages/rules`, dann Prisma generate und Build, Volume für `data/`; Web als Next.js standalone mit `API_INTERNAL_URL=http://api:4000`.
+2. `docker-compose.yml` (Produktion: `api`, `web`, `caddy` mit automatischem Let’s Encrypt, Volumes `api_data`, `caddy_data`, Healthchecks, Restart-Policy, Env aus `.env`) und `docker-compose.dev.yml` mit MailDev.
+3. `deploy/Caddyfile` (Domain aus `DOMAIN`, `/api/*` zur API, Rest zum Web, Security-Header, optional IP-Allowlist für `/admin*`), `deploy/setup-server.sh` (Ubuntu 24.04: Docker, ufw 22/80/443, `/opt/bodenschutz`, `.env` aus Vorlage mit zufälligem SESSION_SECRET, unattended-upgrades, `docker compose up -d`), `deploy/backup.sh` (SQLite-Backup, Uploads, PDFs, 14 Tage Rotation, optional rclone), `deploy/restore.sh`, `deploy/update.sh` (pull/build/up, `prisma db push`, Smoke-Test), `deploy/cron.example`.
+4. `.github/workflows/deploy.yml`: bei Tag `v*` Images nach `ghcr.io/cykruz/bodenschutz-api` und `…-web`, optionaler SSH-Deploy mit Secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`.
+5. `docs/BETRIEB.md`: Teil für den Techniker (Server, DNS, Setup, `.env`, erster Start, Backups, Updates, Logs, Fehler) und Teil für Mario in einfacher Sprache (was läuft wo, Login in die Verwaltung, was tun wenn etwas nicht geht, Datensicherung), plus Checkliste „Vor dem Livegang“.
+6. Sicherheit: Container ohne Root, nur nötige Ports, `.env` 600, Fail2ban-Hinweis, Secrets nie im Image.
+
+Prüfen: `docker compose config`, wenn möglich Build und Start mit grünen Healthchecks, `shellcheck` und `bash -n` auf alle Skripte. Abschlussbericht mit Ergebnis.
+
 ## Auftrag 3: Expo-App
 
 Expo mit Router, TypeScript; Pakete per `npx expo install` (camera, image-picker, image, file-system, fonts Nunito/Nunito Sans, async-storage, zod). Konfiguration: Name „Bodenschutz Austria“, slug `bodenschutz-austria`, Paket `at.bodenschutzaustria.app`, deutsche Berechtigungstexte, Icon/Splash in Markenfarben, `eas.json` mit development/preview (APK)/production (AAB). Bildschirme: Start, Assistent (Vorhaben, Foto, Maße, Mengen, Kontakt, Senden, Bestätigung), Chat mit KI-Kennzeichnung und Badge, Info. API-Basis aus `EXPO_PUBLIC_API_URL`, Mock-Modus. Prüfung: tsc, expo-doctor, `expo export --platform android`, lint. README mit Expo-Go-Start, LAN-IP, EAS-Schritten für APK und Play-Console-Test.

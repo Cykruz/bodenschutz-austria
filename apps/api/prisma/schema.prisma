@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id                 String  @id @default(cuid())
+  slug               String  @unique
+  name               String
+  description        String  @default("")
+  lengthCm           Float
+  widthCm            Float
+  thicknessMm        Float
+  weightKg           Float
+  platesPerPallet    Int
+  pricePerPlateCents Int     @default(0)
+  loadCapacityTons   Float
+  material           String  @default("")
+  isPlaceholder      Boolean @default(true)
+  active             Boolean @default(true)
+  sortOrder          Int     @default(0)
+
+  inquiries Inquiry[]
+}
+
+model FreightZone {
+  id                  String  @id @default(cuid())
+  name                String
+  /// kommagetrennte PLZ-Präfixe, z. B. "1,2,3,7"
+  postalPrefixes      String
+  pricePerPalletCents Int
+  minimumCents        Int
+  isPlaceholder       Boolean @default(true)
+}
+
+model Inquiry {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  /// APP | WEB | EMAIL
+  channel           String
+  /// NEW | DRAFT | QUESTION | APPROVED | SENT | REJECTED
+  status            String    @default("NEW")
+  /// CONSTRUCTION | EVENT | PADDOCK
+  projectType       String
+  /// AREA | LANES
+  mode              String
+  areaM2            Float?
+  lengthM           Float?
+  laneWidthM        Float?
+  laneCount         Int?
+  productId         String
+  product           Product   @relation(fields: [productId], references: [id])
+  photoPath         String?
+  /// JSON-String
+  photoAnalysis     String?
+  /// JSON-String (CalculationResult)
+  calculation       String
+  /// STANDARD | REVIEW
+  classification    String
+  /// JSON-String (string[])
+  reviewReasons     String    @default("[]")
+  customerName      String
+  email             String
+  phone             String?
+  street            String?
+  postalCode        String
+  city              String
+  /// FORKLIFT | CRANE_NEEDED | UNKNOWN
+  unloading         String
+  notes             String?
+  rentalRequested   Boolean   @default(false)
+  aiDraft           String?
+  adminNotes        String?
+  offerPdfPath      String?
+  sentAt            DateTime?
+  aiDisclosureShown Boolean   @default(false)
+
+  emails EmailMessage[]
+}
+
+model EmailMessage {
+  id          String    @id @default(cuid())
+  /// IN | OUT
+  direction   String
+  messageId   String?
+  fromAddress String
+  toAddress   String
+  subject     String
+  textBody    String
+  receivedAt  DateTime  @default(now())
+  /// STANDARD | REVIEW | UNRELATED | null
+  category    String?
+  aiDraft     String?
+  /// NEW | DRAFT | SENT | IGNORED
+  status      String    @default("NEW")
+  inquiryId   String?
+  inquiry     Inquiry?  @relation(fields: [inquiryId], references: [id])
+  autoSent    Boolean   @default(false)
+  inReplyToId String?
+
+  @@index([messageId])
+  @@index([status])
+}
+
+model ApprovalRule {
+  key         String  @id
+  label       String
+  description String
+  autoAllowed Boolean @default(false)
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  channel   String
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  /// user | assistant
+  role      String
+  content   String
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId])
+}

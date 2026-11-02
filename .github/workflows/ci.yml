@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rules:
+    name: packages/rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install
+        run: npm --prefix packages/rules install
+      - name: Typecheck
+        run: npm --prefix packages/rules run typecheck
+      - name: Test
+        run: npm --prefix packages/rules test
+      - name: Build
+        run: npm --prefix packages/rules run build
+
+  api:
+    name: apps/api
+    runs-on: ubuntu-latest
+    needs: rules
+    env:
+      NODE_ENV: test
+      SESSION_SECRET: ci-session-secret-mit-mindestens-32-zeichen
+      ADMIN_EMAIL: admin@test.local
+      ADMIN_PASSWORD: geheim-test-123
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build rules (Abhängigkeit per file:)
+        run: npm --prefix packages/rules install && npm --prefix packages/rules run build
+      - name: Install
+        run: npm --prefix apps/api install
+      - name: Typecheck
+        run: npm --prefix apps/api run typecheck
+      - name: Test
+        run: npm --prefix apps/api test
+      - name: Build
+        run: npm --prefix apps/api run build
+
+  # Erweiterbar: Jobs für apps/web (next build, typecheck) und apps/mobile (tsc) nach gleichem Muster.
