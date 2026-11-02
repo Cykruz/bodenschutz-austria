@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Camera, HardHat, PawPrint, Tent, Truck, Construction, HelpCircle, ImagePlus, Trash2, Send } from 'lucide-react';
 import { analyzePhoto, calculate, createInquiry, describeError, getProducts } from '@/lib/api';
 import { PRINCIPLES, PROJECT_TYPE_LABELS, UNLOADING_LABELS } from '@/lib/site';
@@ -70,10 +70,18 @@ const UNLOADING_OPTIONS: { value: Unloading; text: string; icon: React.ReactNode
   { value: 'UNKNOWN', text: 'Noch unklar – wir klären das gemeinsam.', icon: <HelpCircle className="size-6" aria-hidden /> },
 ];
 
+const PRESET_TYPES: ProjectType[] = ['CONSTRUCTION', 'EVENT', 'PADDOCK'];
+
 export function Wizard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preset = searchParams.get('vorhaben');
   const [step, setStep] = useState(1);
-  const [s, setS] = useState<WizardState>(initialState);
+  const [s, setS] = useState<WizardState>(() => ({
+    ...initialState,
+    // Von den Einsatz-Karten der Startseite kommt das Vorhaben als ?vorhaben=CONSTRUCTION|EVENT|PADDOCK
+    projectType: PRESET_TYPES.find((t) => t === preset),
+  }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Wizard } from '@/components/anfrage/Wizard';
 import { PRINCIPLES } from '@/lib/site';
+import { Spinner } from '@/components/ui/Spinner';
 
 export const metadata: Metadata = {
   title: 'Angebot anfragen',
@@ -20,7 +22,9 @@ export default function AnfragePage() {
             Sechs kurze Schritte, etwa drei Minuten. {PRINCIPLES.noOrder} Preise und Mengen prüft am Ende immer ein Mensch.
           </p>
         </header>
-        <Wizard />
+        <Suspense fallback={<Spinner label="Assistent wird geladen …" />}>
+          <Wizard />
+        </Suspense>
       </div>
     </div>
   );

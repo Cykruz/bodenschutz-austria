@@ -54,20 +54,24 @@ function makePlateTexture(): THREE.CanvasTexture | null {
   return tex;
 }
 
-let shared: { map: THREE.CanvasTexture | null; side: THREE.MeshStandardMaterial; top: THREE.MeshStandardMaterial } | null = null;
+type SharedMaterials = { map: THREE.CanvasTexture | null; side: THREE.MeshStandardMaterial; top: THREE.MeshStandardMaterial };
+let shared: SharedMaterials | null = null;
+
+/** Materialien einmal je Seite erzeugen und zwischen allen Szenen teilen (Modul-Cache, kein Hook-Zustand). */
+function getSharedMaterials(): SharedMaterials {
+  if (!shared) {
+    const map = makePlateTexture();
+    shared = {
+      map,
+      top: new THREE.MeshStandardMaterial({ map: map ?? undefined, color: map ? '#ffffff' : COLORS.base, roughness: 0.78, metalness: 0.05 }),
+      side: new THREE.MeshStandardMaterial({ color: COLORS.grid, roughness: 0.85, metalness: 0.05 }),
+    };
+  }
+  return shared;
+}
 
 export function usePlateMaterials() {
-  return useMemo(() => {
-    if (!shared) {
-      const map = makePlateTexture();
-      shared = {
-        map,
-        top: new THREE.MeshStandardMaterial({ map: map ?? undefined, color: map ? '#ffffff' : COLORS.base, roughness: 0.78, metalness: 0.05 }),
-        side: new THREE.MeshStandardMaterial({ color: COLORS.grid, roughness: 0.85, metalness: 0.05 }),
-      };
-    }
-    return shared;
-  }, []);
+  return useMemo(() => getSharedMaterials(), []);
 }
 
 export interface PlateProps {

@@ -45,3 +45,23 @@ export const FAQ_ITEMS: FaqItem[] = [
       'Aus 100 % Recycling-Kunststoff, hergestellt in der EU. Sie schützen Rasen und Boden ohne Versiegelung und können nach dem Einsatz wieder aufgenommen werden.',
   },
 ];
+
+/** Die vier Fragen der Startseite (Texte aus docs/design/Main.dc.html). */
+export const FAQ_HOME: FaqItem[] = [
+  {
+    question: 'Hält die Platte einen LKW aus?',
+    answer: 'Die Platte ist für bis zu 40 Tonnen ausgelegt. Ob dein Untergrund das trägt, prüft niemand per Foto. Bei Unsicherheit beraten wir persönlich.',
+  },
+  {
+    question: 'Wie wird geliefert?',
+    answer: 'Auf Paletten per Spedition. Wichtig ist, ob vor Ort ein Stapler da ist oder ein Kran gebraucht wird. Das fragen wir in der Anfrage ab.',
+  },
+  {
+    question: 'Was kostet das?',
+    answer: 'Der Rechner zeigt dir die Mengen sofort. Den Preis bekommst du nach kurzer Prüfung als Angebot, abhängig von Menge und Lieferort.',
+  },
+  {
+    question: 'Spreche ich mit einer KI?',
+    answer: 'Im Chat ja, das sagen wir dir gleich zu Beginn. Mengen und Preise rechnet die KI nicht aus, das machen feste Regeln. Angebote gibt immer ein Mensch frei.',
+  },
+];

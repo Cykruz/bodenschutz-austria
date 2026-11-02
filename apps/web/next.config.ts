@@ -14,6 +14,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Für den Docker-Betrieb: eigenständiger Server unter .next/standalone (siehe apps/web/Dockerfile)
+  output: 'standalone',
+  // Kein automatisch erzeugtes AGENTS.md im Repo
+  agentRules: false,
   reactStrictMode: true,
   poweredByHeader: false,
   turbopack: {

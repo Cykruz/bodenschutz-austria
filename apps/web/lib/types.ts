@@ -149,6 +149,8 @@ export interface Inquiry {
   productId: string;
   product?: ProductSpec | null;
   photoPath?: string | null;
+  /** Die API liefert statt des Dateipfads nur, ob ein Foto vorliegt (GET /api/admin/inquiries/:id/photo). */
+  hasPhoto?: boolean;
   photoAnalysis?: PhotoAnalysis | string | null;
   calculation: CalculationResult | string;
   classification: Classification;

@@ -1,0 +1,102 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+import { useCallback, useRef, useState } from 'react';
+import { useMotionValueEvent, useReducedMotion, useScroll } from 'motion/react';
+import { useCanRender3D } from '@/components/three/support';
+import { ClipPlatte } from '@/components/clips/ClipPlatte';
+import { SectionHeading } from '@/components/ui/SectionHeading';
+
+export const PHASES = [
+  { n: '01', label: 'Verlegen', title: 'Zwei Personen, kein Gerät', text: 'Platten greifen ineinander. Rund 100 m² pro Stunde sind realistisch. [Wert von Mario bestätigen]' },
+  { n: '02', label: 'Belasten', title: 'Trägt bis 40 Tonnen', text: 'Die Last verteilt sich über die Fläche. Der Untergrund bleibt geschützt.' },
+  { n: '03', label: 'Aufnehmen', title: 'Weg ohne Spuren', text: 'Keine Versiegelung, kein Schaden. Platten reinigen, stapeln, wiederverwenden.' },
+] as const;
+
+const SequenzScene = dynamic(() => import('@/components/three/SequenzScene'), { ssr: false });
+
+/**
+ * Gepinnte Scroll-Sequenz „Verlegen · Belasten · Aufnehmen“: der Scroll-Fortschritt treibt die 3D-Szene (Scroll-Scrub).
+ * Ohne 3D (schwaches Gerät, kein WebGL, reduced motion) kommt der Mini-Clip plus drei Standbild-Karten.
+ */
+export function Sequenz() {
+  const can3D = useCanRender3D();
+  const reduce = useReducedMotion();
+  if (can3D && !reduce) return <Pinned />;
+  return <Fallback />;
+}
+
+function Pinned() {
+  const outer = useRef<HTMLDivElement>(null);
+  const progressRef = useRef(0);
+  const invalidateRef = useRef<() => void>(() => {});
+  const [phase, setPhase] = useState(0);
+  const { scrollYProgress } = useScroll({ target: outer, offset: ['start start', 'end end'] });
+
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    progressRef.current = v;
+    invalidateRef.current();
+    const next = v < 0.33 ? 0 : v < 0.66 ? 1 : 2;
+    setPhase((p) => (p === next ? p : next));
+  });
+
+  const registerInvalidate = useCallback((fn: () => void) => {
+    invalidateRef.current = fn;
+  }, []);
+
+  return (
+    <section id="highlight" className="bg-salbei" aria-labelledby="sequenz-title">
+      <div ref={outer} className="relative h-[320vh]">
+        <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
+          <div className="container-site grid items-center gap-8 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <SectionHeading eyebrow="Das Highlight" title={<span id="sequenz-title">Verlegen. Belasten. Aufnehmen.</span>} />
+              <ol className="mt-8 space-y-5" aria-label="Drei Phasen">
+                {PHASES.map((p, i) => (
+                  <li key={p.n} className={`transition-opacity duration-500 ${phase === i ? 'opacity-100' : 'opacity-35'}`} aria-current={phase === i ? 'step' : undefined}>
+                    <p className="text-sm font-bold tracking-[0.2em] text-terracotta-text uppercase">
+                      <span className="mr-3 font-heading text-3xl font-extrabold text-gruen tabular-nums sm:text-4xl">{p.n}</span>
+                      {p.label}
+                    </p>
+                    <h3 className="mt-1 text-xl sm:text-2xl">{p.title}</h3>
+                    <p className="mt-1 max-w-md text-text">{p.text}</p>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-6 text-sm text-text/70">Beim Scrollen bewegt sich die Platte durch die drei Phasen.</p>
+            </div>
+            <div className="relative aspect-[4/3] w-full lg:col-span-7 lg:aspect-[16/11]">
+              <SequenzScene progressRef={progressRef} registerInvalidate={registerInvalidate} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Fallback() {
+  return (
+    <section id="highlight" className="bg-salbei py-20 sm:py-28" aria-labelledby="sequenz-title">
+      <div className="container-site flex flex-col gap-12">
+        <SectionHeading
+          eyebrow="Das Highlight"
+          title={<span id="sequenz-title">Verlegen. Belasten. Aufnehmen.</span>}
+          text="Die Platte durchläuft drei Phasen. Hier als Clip und als drei Standbilder."
+        />
+        <ClipPlatte className="mx-auto w-full max-w-3xl" caption="Verlegen, belasten, aufnehmen. Der Rasen darunter bleibt grün." />
+        <ol className="grid gap-6 md:grid-cols-3">
+          {PHASES.map((p) => (
+            <li key={p.n} className="karte tilt p-7">
+              <p className="text-sm font-bold tracking-[0.2em] text-terracotta-text uppercase">
+                {p.n} {p.label}
+              </p>
+              <h3 className="mt-2 text-2xl">{p.title}</h3>
+              <p className="mt-2 text-text">{p.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { clamp01, lerp, Plate, SceneLights, smooth } from './Plate';
 
@@ -47,7 +47,7 @@ function buildPoses(): Pose[] {
 }
 
 function Plates({ progressRef, offsetX = 0 }: Pick<HeroSceneProps, 'progressRef' | 'offsetX'>) {
-  const poses = useMemo(buildPoses, []);
+  const poses = useMemo(() => buildPoses(), []);
   const refs = useRef<(THREE.Group | null)[]>([]);
   const group = useRef<THREE.Group>(null);
 
@@ -97,29 +97,25 @@ function Plates({ progressRef, offsetX = 0 }: Pick<HeroSceneProps, 'progressRef'
 }
 
 function CameraRig({ pointerRef }: Pick<HeroSceneProps, 'pointerRef'>) {
-  const { camera } = useThree();
   const target = useMemo(() => new THREE.Vector3(0, 0.2, 0), []);
-  useFrame(() => {
+  // Kamera aus dem Frame-Zustand holen (nicht aus einem Hook-Rückgabewert verändern)
+  useFrame(({ camera }) => {
     const px = pointerRef.current?.x ?? 0;
     const py = pointerRef.current?.y ?? 0;
     camera.position.x = lerp(camera.position.x, px * 0.9, 0.05);
-    camera.position.y = lerp(camera.position.y, 3.4 - py * 0.5, 0.05);
+    camera.position.y = lerp(camera.position.y, 3.8 - py * 0.5, 0.05);
     camera.lookAt(target);
   });
   return null;
 }
 
 export default function HeroScene({ progressRef, pointerRef, active, offsetX = 0 }: HeroSceneProps) {
-  const ready = useRef(false);
-  useEffect(() => {
-    ready.current = true;
-  }, []);
   return (
     <Canvas
       frameloop={active ? 'always' : 'demand'}
       dpr={[1, 1.6]}
       shadows
-      camera={{ position: [0, 3.4, 8.5], fov: 38, near: 0.1, far: 60 }}
+      camera={{ position: [0, 3.8, 11.5], fov: 36, near: 0.1, far: 60 }}
       gl={{ alpha: true, antialias: true, powerPreference: 'low-power' }}
       style={{ background: 'transparent' }}
       aria-hidden

@@ -31,57 +31,59 @@
   --shadow-karte: 0 1px 2px rgb(30 58 47 / 0.06), 0 8px 24px -12px rgb(30 58 47 / 0.18);
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
+@layer base {
   html {
-    scroll-behavior: auto;
+    scroll-behavior: smooth;
   }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
-}
 
-body {
-  background: var(--color-sand);
-  color: var(--color-text);
-  font-family: var(--font-sans);
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
+  body {
+    background: var(--color-sand);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
 
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  color: var(--color-gruen);
-  letter-spacing: -0.01em;
-  line-height: 1.15;
-  text-wrap: balance;
-}
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--color-gruen);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
 
-p {
-  text-wrap: pretty;
-}
+  p {
+    text-wrap: pretty;
+  }
 
-:focus-visible {
-  outline: 3px solid var(--color-terracotta);
-  outline-offset: 3px;
-  border-radius: 6px;
-}
+  :focus-visible {
+    outline: 3px solid var(--color-terracotta);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
 
-::selection {
-  background: var(--color-akzent);
-  color: var(--color-gruen-dunkel);
+  ::selection {
+    background: var(--color-akzent);
+    color: var(--color-gruen-dunkel);
+  }
 }
 
 /* Bausteine */
@@ -145,3 +147,28 @@ p {
     font-weight: 700;
   }
 }
+
+/* Hero: Zeilen steigen nacheinander auf (nur opacity/transform), bei reduced motion sofort sichtbar */
+@keyframes rise-in {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.rise { opacity: 0; animation: rise-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
+.d1 { animation-delay: 0.1s; }
+.d2 { animation-delay: 0.3s; }
+.d3 { animation-delay: 0.5s; }
+.d4 { animation-delay: 0.7s; }
+.d5 { animation-delay: 0.9s; }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-in { animation: fade-in 1.2s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .rise { opacity: 1; animation: none; }
+  .fade-in { animation: none; }
+}
+/* Weiches Scrollen (Lenis) */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }

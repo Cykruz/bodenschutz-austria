@@ -1,14 +1,10 @@
 import Link from 'next/link';
-import { ArrowDown, Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import { LEGAL_LINKS, OPERATOR, SITE_NAME } from '@/lib/site';
+import { FooterNext } from './FooterNext';
 import { Logo } from './Logo';
 
-export interface FooterProps {
-  /** Zeigt den Übergang „Weiter scrollen: Anfrage starten“ (Startseite). */
-  showNext?: boolean;
-}
-
-export function Footer({ showNext = false }: FooterProps) {
+export function Footer() {
   return (
     <footer className="bg-gruen text-sand" aria-labelledby="footer-heading">
       <div className="container-site py-14">
@@ -75,22 +71,11 @@ export function Footer({ showNext = false }: FooterProps) {
           <p>
             © {new Date().getFullYear()} {OPERATOR.company}. Produktdaten teilweise Platzhalter, werden vor dem Livebetrieb bestätigt.
           </p>
-          <p>KI-Berater nach EU-KI-Verordnung Art. 50 gekennzeichnet.</p>
+          <p>Chat und E-Mail-Entwürfe nutzen KI (gekennzeichnet nach EU-KI-Verordnung Art. 50). Jedes Angebot wird von einem Menschen geprüft.</p>
         </div>
       </div>
 
-      {showNext && (
-        <Link
-          href="/anfrage"
-          className="group block border-t border-white/15 bg-gruen-dunkel py-10 text-center transition-colors hover:bg-terracotta focus-visible:bg-terracotta"
-        >
-          <span className="text-sm font-bold tracking-[0.25em] text-akzent uppercase group-hover:text-white">Weiter scrollen</span>
-          <span className="mt-2 flex items-center justify-center gap-3 font-heading text-3xl font-extrabold text-white sm:text-5xl">
-            Anfrage starten
-            <ArrowDown className="size-8 transition-transform group-hover:translate-y-1" aria-hidden />
-          </span>
-        </Link>
-      )}
+      <FooterNext />
     </footer>
   );
 }
