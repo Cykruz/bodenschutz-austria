@@ -25,7 +25,7 @@ MARK=/var/lib/bodenschutz-setup.done
 
 if [[ -f "${MARK}" ]]; then
   echo "[gcp-startup] bereits eingerichtet, Container werden gestartet"
-  cd "${APP_DIR}" && docker compose up -d || true
+  if cd "${APP_DIR}"; then docker compose up -d || true; fi
   exit 0
 fi
 if [[ -z "${DOMAIN}" ]]; then

@@ -90,6 +90,10 @@ Der API-Container führt bei jedem Start `prisma db push` (Schema) und den Seed 
 
 Danach: `https://bodenschutz-austria.at/admin`, Login mit `ADMIN_EMAIL`/`ADMIN_PASSWORD`. Unter **Produkte** und **Frachtzonen** die echten Werte eintragen und „von Mario bestätigt“ anhaken.
 
+### A.3a Alternative: Server in Google Cloud
+
+Wer alles unter einem Google-Konto haben will, legt statt eines Mietservers eine Compute-Engine-VM an. `deploy/gcp/README.md` enthält den fertigen Cloud-Shell-Befehl; die VM richtet sich über `deploy/gcp/startup-script.sh` beim ersten Start selbst ein (inklusive Vorab-Zugang und fester IP). Danach gelten die gleichen Abschnitte wie hier (A.4 ff.).
+
 ### A.5a Testbetrieb nur für Mario und Techniker (Vorab-Zugang)
 
 Für eine Testphase kann die ganze Seite hinter eine Passwortabfrage gelegt werden, auch unter einer Test-Subdomain (z. B. `DOMAIN=test.bodenschutz-austria.at`, DNS-A-Eintrag dafür anlegen; der `www.`-Eintrag ist dann nicht nötig, Caddy protokolliert nur, dass es dafür kein Zertifikat bekommt).
@@ -99,7 +103,7 @@ Für eine Testphase kann die ganze Seite hinter eine Passwortabfrage gelegt werd
 3. Browser fragt jetzt vor jeder Seite nach Benutzer und Passwort; Suchmaschinen bekommen `noindex`. Die Verwaltung hat zusätzlich ihren eigenen Login.
 4. Für den Livegang beide Variablen leeren und `docker compose up -d caddy`.
 
-Die Handy-App kann in dieser Phase nicht gegen die geschützte API testen (sie sendet keine Passwortabfrage); dafür entweder `ADMIN_ALLOW_IPS` statt Vorab-Zugang nutzen oder den Vorab-Zugang nur kurz abschalten.
+Die Passwortabfrage gilt nur für die Website. Die API unter `/api/*` bleibt erreichbar, damit die Handy-App gegen die Demo arbeiten kann; sie schützt sich selbst über Rate-Limits und den Admin-Login. Für die App wird `EXPO_PUBLIC_API_URL=https://demo.bodenschutz-austria.at` gesetzt (in `apps/mobile/eas.json` für das Profil `preview` bereits hinterlegt) und die APK mit `eas build -p android --profile preview` gebaut.
 
 ### A.5b Demo parallel zur bestehenden WordPress-Seite
 
