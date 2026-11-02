@@ -13,7 +13,10 @@
     "db:setup": "npm --prefix apps/api run db:setup",
     "build": "npm --prefix packages/rules run build && npm --prefix apps/api run build && npm --prefix apps/web run build",
     "test": "npm --prefix packages/rules test && npm --prefix apps/api test",
-    "typecheck": "npm --prefix packages/rules run typecheck && npm --prefix apps/api run typecheck && npm --prefix apps/web run typecheck && npm --prefix apps/mobile run typecheck"
+    "typecheck": "npm --prefix packages/rules run typecheck && npm --prefix apps/api run typecheck && npm --prefix apps/web run typecheck && npm --prefix apps/mobile run typecheck",
+    "lint": "npm --prefix apps/web run lint && npm --prefix apps/mobile run lint",
+    "docker:dev": "docker compose -f docker-compose.dev.yml up -d --build",
+    "docker:prod": "docker compose up -d --build"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

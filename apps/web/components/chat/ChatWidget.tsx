@@ -233,7 +233,7 @@ export function ChatWidget() {
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-terracotta text-white hover:bg-terracotta-dunkel disabled:opacity-50"
+                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-terracotta text-gruen-dunkel hover:bg-akzent disabled:opacity-50"
                 aria-label="Frage senden"
               >
                 <SendHorizontal className="size-5" aria-hidden />

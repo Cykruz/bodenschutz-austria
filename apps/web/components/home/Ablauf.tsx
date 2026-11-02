@@ -33,7 +33,7 @@ function PhoneMockup() {
         ))}
       </div>
       <p className="mt-2 text-[10px] text-text/80">Beispiel mit Platzhalterdaten, nach festen Regeln gerechnet.</p>
-      <div className="mt-3 rounded-full bg-terracotta py-2 text-center text-xs font-extrabold text-white">Weiter</div>
+      <div className="mt-3 rounded-full bg-terracotta py-2 text-center text-xs font-extrabold text-gruen-dunkel">Weiter</div>
     </div>
   );
 }

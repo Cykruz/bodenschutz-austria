@@ -53,13 +53,17 @@ function Pinned() {
               <SectionHeading eyebrow="Das Highlight" title={<span id="sequenz-title">Verlegen. Belasten. Aufnehmen.</span>} />
               <ol className="mt-8 space-y-5" aria-label="Drei Phasen">
                 {PHASES.map((p, i) => (
-                  <li key={p.n} className={`transition-opacity duration-500 ${phase === i ? 'opacity-100' : 'opacity-35'}`} aria-current={phase === i ? 'step' : undefined}>
-                    <p className="text-sm font-bold tracking-[0.2em] text-terracotta-text uppercase">
-                      <span className="mr-3 font-heading text-3xl font-extrabold text-gruen tabular-nums sm:text-4xl">{p.n}</span>
+                  <li
+                    key={p.n}
+                    className={`border-l-4 pl-5 transition-[border-color,transform] duration-500 ${phase === i ? 'translate-x-1 border-terracotta' : 'border-salbei-dunkel'}`}
+                    aria-current={phase === i ? 'step' : undefined}
+                  >
+                    <p className={`text-sm font-bold tracking-[0.2em] uppercase ${phase === i ? 'text-terracotta-text' : 'text-text'}`}>
+                      <span className={`mr-3 font-heading text-3xl font-extrabold tabular-nums sm:text-4xl ${phase === i ? 'text-gruen' : 'text-text'}`}>{p.n}</span>
                       {p.label}
                     </p>
-                    <h3 className="mt-1 text-xl sm:text-2xl">{p.title}</h3>
-                    <p className="mt-1 max-w-md text-text">{p.text}</p>
+                    <h3 className={`mt-1 text-xl sm:text-2xl ${phase === i ? '' : 'text-text'}`}>{p.title}</h3>
+                    <p className={`mt-1 max-w-md text-text ${phase === i ? '' : 'hidden sm:block'}`}>{p.text}</p>
                   </li>
                 ))}
               </ol>

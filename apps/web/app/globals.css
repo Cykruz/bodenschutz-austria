@@ -12,7 +12,7 @@
   --color-salbei-dunkel: #cfdcc9;
   --color-terracotta: #d97b2a;
   --color-terracotta-dunkel: #c46a1f;
-  --color-terracotta-text: #b9621c;
+  --color-terracotta-text: #9e500e; /* dunkler als #B9621C aus der Architektur: 4,5:1 auf Sand/Salbei */
   --color-akzent: #f0a85a;
   --color-text: #44524a;
   --color-text-dunkel: #1f2a24;
@@ -154,6 +154,12 @@
   100% { opacity: 1; transform: translateY(0); }
 }
 .rise { opacity: 0; animation: rise-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
+/* Variante ohne Opacity für die Hero-Überschrift: sie ist sofort sichtbar (LCP) und steigt nur auf */
+@keyframes rise-solid {
+  0% { transform: translateY(40px); }
+  100% { transform: translateY(0); }
+}
+.rise-solid { animation: rise-solid 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 .d1 { animation-delay: 0.1s; }
 .d2 { animation-delay: 0.3s; }
 .d3 { animation-delay: 0.5s; }
@@ -166,6 +172,7 @@
 .fade-in { animation: fade-in 1.2s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   .rise { opacity: 1; animation: none; }
+  .rise-solid { animation: none; }
   .fade-in { animation: none; }
 }
 /* Weiches Scrollen (Lenis) */

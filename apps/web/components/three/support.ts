@@ -19,8 +19,12 @@ export function useCanRender3D(): boolean | null {
       if ((nav.hardwareConcurrency ?? 8) <= 2) return false;
       try {
         const c = document.createElement('canvas');
-        const gl = c.getContext('webgl2') ?? c.getContext('webgl');
+        const gl = (c.getContext('webgl2') ?? c.getContext('webgl')) as WebGLRenderingContext | null;
         if (!gl) return false;
+        // Software-Renderer (kein GPU-Zugriff, z. B. VMs, Headless, alte Treiber): 3D wäre quälend langsam → Poster/Clip
+        const info = gl.getExtension('WEBGL_debug_renderer_info');
+        const renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
+        if (/swiftshader|llvmpipe|softpipe|software/i.test(renderer)) return false;
       } catch {
         return false;
       }

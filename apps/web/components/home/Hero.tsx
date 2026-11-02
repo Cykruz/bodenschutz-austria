@@ -18,7 +18,7 @@ export function Hero() {
         <p className="rise d1 text-xs font-bold tracking-[0.3em] text-akzent uppercase sm:text-sm">Bodenschutzplatten · classicXtreme · Österreich</p>
         <h1 id="hero-title" className="max-w-5xl text-[clamp(2.6rem,8.2vw,6.5rem)] leading-[0.98] font-extrabold tracking-[-0.02em] text-white">
           {LINES.map((line, i) => (
-            <span key={line} className={`rise block ${['d2', 'd3', 'd4'][i]}`}>
+            <span key={line} className={`rise-solid block ${['d2', 'd3', 'd4'][i]}`}>
               {line}
             </span>
           ))}

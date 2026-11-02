@@ -18,8 +18,8 @@ export function Kinetic() {
   const xs = [x1, x2, x3];
 
   return (
-    <section ref={ref} className="overflow-hidden bg-terracotta py-24 text-white sm:py-32" aria-labelledby="kinetic-title">
-      <h2 id="kinetic-title" className="font-heading text-[clamp(2.8rem,11vw,9rem)] leading-[0.95] font-extrabold tracking-[-0.03em] text-white uppercase">
+    <section ref={ref} className="overflow-hidden bg-terracotta py-24 text-gruen-dunkel sm:py-32" aria-labelledby="kinetic-title">
+      <h2 id="kinetic-title" className="font-heading text-[clamp(2.8rem,11vw,9rem)] leading-[0.95] font-extrabold tracking-[-0.03em] text-gruen-dunkel uppercase">
         {LINES.map((line, i) => (
           <motion.span key={line} className="block px-5 whitespace-nowrap sm:px-10" style={reduce ? undefined : { x: xs[i] }}>
             {line}
@@ -27,12 +27,12 @@ export function Kinetic() {
         ))}
       </h2>
       <div className="container-site mt-14 grid gap-5 md:grid-cols-2">
-        <div className="flex gap-4 rounded-[24px] bg-white/12 p-6 backdrop-blur">
-          <AlertTriangle className="size-8 shrink-0 text-akzent" aria-hidden />
+        <div className="flex gap-4 rounded-[24px] bg-sand p-6 text-gruen">
+          <AlertTriangle className="size-8 shrink-0 text-terracotta-text" aria-hidden />
           <p className="text-lg leading-snug font-semibold">{PRINCIPLES.noSurvey}</p>
         </div>
-        <div className="flex gap-4 rounded-[24px] bg-white/12 p-6 backdrop-blur">
-          <ShieldCheck className="size-8 shrink-0 text-akzent" aria-hidden />
+        <div className="flex gap-4 rounded-[24px] bg-sand p-6 text-gruen">
+          <ShieldCheck className="size-8 shrink-0 text-terracotta-text" aria-hidden />
           <p className="text-lg leading-snug font-semibold">{PRINCIPLES.pricesLater}</p>
         </div>
       </div>

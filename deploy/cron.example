@@ -1,0 +1,5 @@
+# Beispiel für /etc/cron.d/bodenschutz-backup (setup-server.sh legt diese Datei an).
+# Tägliche Sicherung um 03:00 Uhr als Betriebsnutzer; Ausgabe ins Logfile.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 3 * * * bodenschutz /opt/bodenschutz/deploy/backup.sh >> /opt/bodenschutz/backups/backup.log 2>&1

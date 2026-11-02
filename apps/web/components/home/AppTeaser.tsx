@@ -50,7 +50,7 @@ export function AppTeaser() {
             <p className="font-heading font-extrabold">46 Platten · 2 Paletten</p>
             <p className="text-[10px] text-terracotta-text">vorläufig</p>
           </div>
-          <div className="mt-4 rounded-full bg-terracotta py-2.5 text-center text-sm font-extrabold text-white">Weiter</div>
+          <div className="mt-4 rounded-full bg-terracotta py-2.5 text-center text-sm font-extrabold text-gruen-dunkel">Weiter</div>
         </div>
       </div>
     </section>

@@ -24,7 +24,7 @@ export function Manifest() {
             <motion.span
               key={part.text}
               className={`inline ${part.muted ? 'text-[#C9D6CC]' : ''}`}
-              initial={reduce ? false : { opacity: 0.15, y: 12 }}
+              initial={reduce ? false : { opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.6 }}
               transition={{ duration: 0.6, delay: i * 0.12, ease: 'easeOut' }}

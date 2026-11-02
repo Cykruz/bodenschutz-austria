@@ -24,7 +24,7 @@ export const FALLBACK_PRODUCT: ProductSpec = {
 export async function fetchProductsServer(): Promise<{ products: ProductSpec[]; fromApi: boolean }> {
   if (process.env.NEXT_PUBLIC_MOCK_API === 'true') return { products: [FALLBACK_PRODUCT], fromApi: false };
   try {
-    const res = await fetch(`${API_INTERNAL_URL}/api/products`, { cache: 'no-store', signal: AbortSignal.timeout(1500) });
+    const res = await fetch(`${API_INTERNAL_URL}/api/products`, { cache: 'no-store', signal: AbortSignal.timeout(700) });
     if (!res.ok) throw new Error(String(res.status));
     const list = (await res.json()) as ProductSpec[];
     if (!Array.isArray(list) || list.length === 0) throw new Error('leer');
