@@ -24,7 +24,9 @@ export function useCanRender3D(): boolean | null {
         // Software-Renderer (kein GPU-Zugriff, z. B. VMs, Headless, alte Treiber): 3D wäre quälend langsam → Poster/Clip
         const info = gl.getExtension('WEBGL_debug_renderer_info');
         const renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
-        if (/swiftshader|llvmpipe|softpipe|software/i.test(renderer)) return false;
+        // ?3d=1 erzwingt die Szene (für Tests ohne Grafikkarte)
+        const forced = new URLSearchParams(window.location.search).get('3d') === '1';
+        if (!forced && /swiftshader|llvmpipe|softpipe|software/i.test(renderer)) return false;
       } catch {
         return false;
       }

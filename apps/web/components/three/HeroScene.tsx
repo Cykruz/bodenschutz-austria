@@ -120,7 +120,8 @@ export default function HeroScene({ progressRef, pointerRef, active, offsetX = 0
       style={{ background: 'transparent' }}
       aria-hidden
     >
-      <SceneLights />
+      {/* etwas mehr Licht: dunkle Platten vor dunkelgrüner Bühne */}
+      <SceneLights intensity={1.3} />
       <Plates progressRef={progressRef} offsetX={offsetX} />
       <CameraRig pointerRef={pointerRef} />
     </Canvas>

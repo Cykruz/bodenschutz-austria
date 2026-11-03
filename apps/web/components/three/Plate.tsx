@@ -1,117 +1,163 @@
 'use client';
 
 import { forwardRef, useMemo } from 'react';
-import { RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-// Bodenschutzplatte: 240 × 120 cm, verhältnisgetreu (2,4 × 1,2 Einheiten), 12 cm hoch für sichtbare Kante.
+// Bodenschutzplatte nach dem echten Produkt: dunkle Recycling-Kunststoffplatte 240 × 120 cm (2,4 × 1,2 Einheiten)
+// mit kleinen länglichen Anti-Rutsch-Noppen in dichten, versetzten Reihen. Wenige Segmente, leichter HDPE-Glanz.
 export const PLATE = { length: 2.4, width: 1.2, height: 0.12 } as const;
 
-const COLORS = { base: '#D97B2A', grid: '#B9621C', light: '#F0A85A' } as const;
+const COLORS = {
+  body: '#24282B', // Anthrazit (Plattenkörper, Recycling-HDPE)
+  top: '#2C3134', // Oberseite
+  stud: '#34393D', // Noppen, fast gleicher Ton, Kontrast entsteht durch Licht
+} as const;
 
-/** Prozedurale Rastertextur (Canvas) – kein externes Modell, keine Bilddatei. */
-function makePlateTexture(): THREE.CanvasTexture | null {
-  if (typeof document === 'undefined') return null;
-  const w = 512;
-  const h = 256;
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-  ctx.fillStyle = COLORS.base;
-  ctx.fillRect(0, 0, w, h);
-  // Raster aus abgerundeten Vertiefungen (12 × 6)
-  const cols = 12;
-  const rows = 6;
-  const cw = w / cols;
-  const ch = h / rows;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = c * cw + cw * 0.14;
-      const y = r * ch + ch * 0.14;
-      const rw = cw * 0.72;
-      const rh = ch * 0.72;
-      ctx.fillStyle = COLORS.grid;
-      roundRect(ctx, x, y, rw, rh, 6);
-      ctx.fill();
-      ctx.fillStyle = COLORS.light;
-      ctx.globalAlpha = 0.35;
-      roundRect(ctx, x + 2, y + 2, rw - 4, rh * 0.22, 4);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+const STUD = { radius: 0.021, length: 0.105, cols: 13, rows: 10, pitchX: 0.172, pitchZ: 0.108 } as const;
+
+/** Oberflächenmuster zur Veranschaulichung: Noppenplatte (Standard), Riffelprofil (Schwerlast), Paddock-Gitter (offen, mit Sand verfüllt). */
+export type PlateVariant = 'noppen' | 'riffel' | 'gitter';
+export const PLATE_VARIANTS: { id: PlateVariant; label: string; text: string }[] = [
+  { id: 'noppen', label: 'Noppenplatte', text: 'Geschlossene Platte mit länglichen Anti-Rutsch-Noppen in versetzten Reihen. Standard für Baustellenzufahrt, Kran- und Eventflächen.' },
+  { id: 'riffel', label: 'Riffelprofil', text: 'Geschlossene Platte mit diagonalem Riffelprofil wie Riffelblech. Besonders griffig für Rampen und häufiges Befahren bei Nässe.' },
+  { id: 'gitter', label: 'Paddock-Gitter', text: 'Offenes Gitter, das mit Sand oder Splitt verfüllt wird. Matschfrei und wasserdurchlässig für Paddock, Auslauf und Führanlage.' },
+];
+
+type Shared = { body: THREE.BufferGeometry; studs: THREE.BufferGeometry; bodyMat: THREE.MeshStandardMaterial; studMat: THREE.MeshStandardMaterial; topMat: THREE.MeshStandardMaterial; open: boolean };
+const sharedByVariant = new Map<PlateVariant, Shared>();
+
+/** Geometrie der Noppen: Kapseln liegend entlang der Plattenlänge, Reihen um eine halbe Teilung versetzt, zu einem Mesh verschmolzen. */
+function buildStuds(): THREE.BufferGeometry {
+  const base = new THREE.CapsuleGeometry(STUD.radius, STUD.length, 3, 10);
+  base.rotateZ(Math.PI / 2); // Länge entlang x
+  const parts: THREE.BufferGeometry[] = [];
+  const maxX = PLATE.length / 2 - STUD.length / 2 - 0.08;
+  for (let row = 0; row < STUD.rows; row++) {
+    const z = (row - (STUD.rows - 1) / 2) * STUD.pitchZ;
+    const offset = row % 2 ? STUD.pitchX / 2 : 0;
+    for (let c = 0; c < STUD.cols; c++) {
+      const x = (c - (STUD.cols - 1) / 2) * STUD.pitchX + offset - STUD.pitchX / 4;
+      if (Math.abs(x) > maxX) continue;
+      const g = base.clone();
+      g.translate(x, PLATE.height / 2 + STUD.radius * 0.25, z);
+      parts.push(g);
     }
   }
-  // Randstreifen
-  ctx.strokeStyle = COLORS.light;
-  ctx.lineWidth = 6;
-  ctx.globalAlpha = 0.5;
-  ctx.strokeRect(3, 3, w - 6, h - 6);
-  ctx.globalAlpha = 1;
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  return tex;
+  base.dispose();
+  const merged = mergeGeometries(parts, false);
+  parts.forEach((p) => p.dispose());
+  return merged ?? new THREE.BufferGeometry();
 }
 
-type SharedMaterials = { map: THREE.CanvasTexture | null; side: THREE.MeshStandardMaterial; top: THREE.MeshStandardMaterial };
-let shared: SharedMaterials | null = null;
-
-/** Materialien einmal je Seite erzeugen und zwischen allen Szenen teilen (Modul-Cache, kein Hook-Zustand). */
-function getSharedMaterials(): SharedMaterials {
-  if (!shared) {
-    const map = makePlateTexture();
-    shared = {
-      map,
-      top: new THREE.MeshStandardMaterial({ map: map ?? undefined, color: map ? '#ffffff' : COLORS.base, roughness: 0.78, metalness: 0.05 }),
-      side: new THREE.MeshStandardMaterial({ color: COLORS.grid, roughness: 0.85, metalness: 0.05 }),
-    };
+/** Riffelprofil: kurze diagonale Stege, in jeder Zelle um 90° gedreht (Riffelblech-Optik), zu einem Mesh verschmolzen. */
+function buildRiffel(): THREE.BufferGeometry {
+  const bar = new THREE.BoxGeometry(0.095, 0.018, 0.026);
+  const parts: THREE.BufferGeometry[] = [];
+  const cols = 20;
+  const rows = 10;
+  const pitchX = (PLATE.length - 0.16) / cols;
+  const pitchZ = (PLATE.width - 0.12) / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const g = bar.clone();
+      g.rotateY(((r + c) % 2 ? 1 : -1) * Math.PI / 4);
+      g.translate((c - (cols - 1) / 2) * pitchX, PLATE.height / 2 + 0.008, (r - (rows - 1) / 2) * pitchZ);
+      parts.push(g);
+    }
   }
-  return shared;
+  bar.dispose();
+  const merged = mergeGeometries(parts, false);
+  parts.forEach((p) => p.dispose());
+  return merged ?? new THREE.BufferGeometry();
 }
 
-export function usePlateMaterials() {
-  return useMemo(() => getSharedMaterials(), []);
+/** Paddock-Gitter: Rahmen plus Stege, dazwischen offen; Zellen werden in der Szene mit einer Sandfläche dargestellt. */
+function buildGitter(): THREE.BufferGeometry {
+  const h = PLATE.height * 0.8;
+  const web = 0.016;
+  const cols = 24;
+  const rows = 12;
+  const parts: THREE.BufferGeometry[] = [];
+  const add = (sx: number, sz: number, x: number, z: number) => {
+    const g = new THREE.BoxGeometry(sx, h, sz);
+    g.translate(x, 0, z);
+    parts.push(g);
+  };
+  add(PLATE.length, web, 0, -PLATE.width / 2 + web / 2);
+  add(PLATE.length, web, 0, PLATE.width / 2 - web / 2);
+  add(web, PLATE.width, -PLATE.length / 2 + web / 2, 0);
+  add(web, PLATE.width, PLATE.length / 2 - web / 2, 0);
+  for (let c = 1; c < cols; c++) add(web, PLATE.width, -PLATE.length / 2 + (c * PLATE.length) / cols, 0);
+  for (let r = 1; r < rows; r++) add(PLATE.length, web, 0, -PLATE.width / 2 + (r * PLATE.width) / rows);
+  const merged = mergeGeometries(parts, false);
+  parts.forEach((p) => p.dispose());
+  return merged ?? new THREE.BufferGeometry();
+}
+
+/** Geometrien und Materialien je Variante einmal erzeugen und zwischen allen Szenen teilen (Modul-Cache, kein Hook-Zustand). */
+function getShared(variant: PlateVariant): Shared {
+  let s = sharedByVariant.get(variant);
+  if (!s) {
+    if (variant === 'gitter') {
+      s = {
+        body: buildGitter(),
+        studs: new THREE.BufferGeometry(),
+        bodyMat: new THREE.MeshStandardMaterial({ color: '#1F2326', roughness: 0.7, metalness: 0.08 }),
+        studMat: new THREE.MeshStandardMaterial({ color: COLORS.stud }),
+        // Sandfüllung der Zellen
+        topMat: new THREE.MeshStandardMaterial({ color: '#BFA77C', roughness: 1 }),
+        open: true,
+      };
+    } else {
+      s = {
+        body: new RoundedBoxGeometry(PLATE.length, PLATE.height, PLATE.width, 3, 0.045),
+        studs: variant === 'riffel' ? buildRiffel() : buildStuds(),
+        bodyMat: new THREE.MeshStandardMaterial({ color: COLORS.body, roughness: 0.62, metalness: 0.1 }),
+        studMat: new THREE.MeshStandardMaterial({ color: variant === 'riffel' ? '#383E42' : COLORS.stud, roughness: 0.42, metalness: 0.15 }),
+        topMat: new THREE.MeshStandardMaterial({ color: COLORS.top, roughness: 0.55, metalness: 0.1 }),
+        open: false,
+      };
+    }
+    sharedByVariant.set(variant, s);
+  }
+  return s;
+}
+
+export function usePlateParts(variant: PlateVariant = 'noppen') {
+  return useMemo(() => getShared(variant), [variant]);
 }
 
 export interface PlateProps {
   position?: [number, number, number];
   rotation?: [number, number, number];
   scale?: number;
+  variant?: PlateVariant;
 }
 
-/** Eine Platte: abgerundeter Quader mit Rastertextur oben, dunklerer Kante seitlich. */
-export const Plate = forwardRef<THREE.Group, PlateProps>(function Plate({ position, rotation, scale = 1 }, ref) {
-  const m = usePlateMaterials();
+/** Eine Platte: dunkler Körper plus Oberflächenmuster als verschmolzenes Low-Poly-Mesh; beim Gitter liegt die Sandfüllung tiefer in den Zellen. */
+export const Plate = forwardRef<THREE.Group, PlateProps>(function Plate({ position, rotation, scale = 1, variant = 'noppen' }, ref) {
+  const p = usePlateParts(variant);
   return (
     <group ref={ref} position={position} rotation={rotation} scale={scale}>
-      {/* Kern (Kanten) */}
-      <RoundedBox args={[PLATE.length, PLATE.height, PLATE.width]} radius={0.035} smoothness={3} material={m.side} castShadow receiveShadow />
-      {/* Oberseite mit Raster, minimal erhöht */}
-      <mesh position={[0, PLATE.height / 2 + 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} material={m.top}>
-        <planeGeometry args={[PLATE.length - 0.08, PLATE.width - 0.08]} />
+      <mesh geometry={p.body} material={p.bodyMat} castShadow receiveShadow />
+      {!p.open && <mesh geometry={p.studs} material={p.studMat} castShadow />}
+      <mesh position={[0, p.open ? PLATE.height * 0.12 : PLATE.height / 2 + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} material={p.topMat} receiveShadow>
+        <planeGeometry args={[PLATE.length - 0.06, PLATE.width - 0.06]} />
       </mesh>
     </group>
   );
 });
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-}
-
-/** Gemeinsame Beleuchtung für alle Szenen (warm, ruhig). */
+/** Gemeinsame Beleuchtung für alle Szenen: warmes Hauptlicht schräg von vorn, damit die Noppen Kanten zeigen. */
 export function SceneLights({ intensity = 1 }: { intensity?: number }) {
   return (
     <>
-      <ambientLight intensity={0.55 * intensity} color="#F6F3EC" />
-      <directionalLight position={[4, 7, 5]} intensity={1.6 * intensity} color="#FFF4E5" castShadow shadow-mapSize={[1024, 1024]} />
-      <directionalLight position={[-5, 3, -4]} intensity={0.5 * intensity} color="#E6EDE3" />
+      <ambientLight intensity={0.5 * intensity} color="#F6F3EC" />
+      <hemisphereLight intensity={0.45 * intensity} color="#E6EDE3" groundColor="#1E3A2F" />
+      <directionalLight position={[5, 8, 6]} intensity={2.2 * intensity} color="#FFF4E5" castShadow shadow-mapSize={[1024, 1024]} />
+      <directionalLight position={[-6, 4, -3]} intensity={0.7 * intensity} color="#C9D6CC" />
     </>
   );
 }
