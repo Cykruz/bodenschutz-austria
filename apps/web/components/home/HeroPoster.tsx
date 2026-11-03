@@ -11,7 +11,7 @@ function Noppen({ rows = 9, cols = 12 }: { rows?: number; cols?: number }) {
       const v = (r + 0.5) / rows; // entlang der Breite
       const x = 180 * u + 180 * v;
       const y = 90 - 90 * u + 90 * v;
-      out.push(<polygon key={`${r}-${c}`} points={`${x - 9},${y + 4.5} ${x + 4},${y - 2} ${x + 9},${y + 0.5} ${x - 4},${y + 7}`} fill="#3F474C" />);
+      out.push(<polygon key={`${r}-${c}`} points={`${x - 9},${y + 4.5} ${x + 4},${y - 2} ${x + 9},${y + 0.5} ${x - 4},${y + 7}`} fill="#4E575D" />);
     }
   }
   return <>{out}</>;
@@ -20,9 +20,9 @@ function Noppen({ rows = 9, cols = 12 }: { rows?: number; cols?: number }) {
 export function HeroPoster({ className = '' }: { className?: string }) {
   const plate = (x: number, y: number, opacity = 1, i = 0) => (
     <g key={`${x}-${y}`} transform={`translate(${x},${y})`} opacity={opacity} className="float-slow" style={{ animationDelay: `${i * -1.3}s` }}>
-      <polygon points="0,90 180,0 360,90 180,180" fill="#2C3134" />
-      <polygon points="0,90 180,180 180,214 0,124" fill="#181C1E" />
-      <polygon points="180,180 360,90 360,124 180,214" fill="#22272A" />
+      <polygon points="0,90 180,0 360,90 180,180" fill="#353C41" />
+      <polygon points="0,90 180,180 180,214 0,124" fill="#1B1F22" />
+      <polygon points="180,180 360,90 360,124 180,214" fill="#272C30" />
       <Noppen />
     </g>
   );
