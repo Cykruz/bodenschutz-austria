@@ -18,14 +18,18 @@ function Noppen({ rows = 9, cols = 12 }: { rows?: number; cols?: number }) {
 }
 
 export function HeroPoster({ className = '' }: { className?: string }) {
-  const plate = (x: number, y: number, opacity = 1, i = 0) => (
-    <g key={`${x}-${y}`} transform={`translate(${x},${y})`} opacity={opacity} className="float-slow" style={{ animationDelay: `${i * -1.3}s` }}>
-      <polygon points="0,90 180,0 360,90 180,180" fill="#353C41" />
-      <polygon points="0,90 180,180 180,214 0,124" fill="#1B1F22" />
-      <polygon points="180,180 360,90 360,124 180,214" fill="#272C30" />
-      <Noppen />
-    </g>
-  );
+  // Palettenstapel wie zu Beginn der 3D-Szene: neun Platten knapp übereinander, leicht versetzt, rechts neben dem Text
+  const plates = Array.from({ length: 9 }, (_, i) => {
+    const jitter = ((i * 7919) % 13) - 6; // deterministischer kleiner Versatz
+    return (
+      <g key={i} transform={`translate(${jitter * 1.2},${-i * 8 + jitter * 0.3})`}>
+        <polygon points="0,90 180,0 360,90 180,180" fill="#353C41" />
+        <polygon points="0,90 180,180 180,189 0,99" fill="#1B1F22" />
+        <polygon points="180,180 360,90 360,99 180,189" fill="#272C30" />
+        {i === 8 && <Noppen />}
+      </g>
+    );
+  });
   return (
     <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" className={className} aria-hidden focusable="false">
       <defs>
@@ -36,13 +40,11 @@ export function HeroPoster({ className = '' }: { className?: string }) {
         </radialGradient>
       </defs>
       <rect width="1440" height="900" fill="url(#hero-stage)" />
-      <g transform="translate(760,250)" opacity="0.95">
-        {plate(-300, -60, 0.35, 5)}
-        {plate(180, -110, 0.5, 4)}
-        {plate(0, 0, 1, 0)}
-        {plate(180, 90, 1, 1)}
-        {plate(-180, 90, 1, 2)}
-        {plate(0, 180, 1, 3)}
+      {/* Bodenscheibe wie in der Szene */}
+      <ellipse cx="1080" cy="540" rx="400" ry="140" fill="#24463A" opacity="0.8" />
+      {/* Positionierung und CSS-Animation getrennt halten: die Animation setzt transform und würde das Attribut überschreiben */}
+      <g transform="translate(900,420)">
+        <g className="float-slow" style={{ animationDuration: '9s' }}>{plates}</g>
       </g>
     </svg>
   );
