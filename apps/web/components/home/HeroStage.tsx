@@ -47,7 +47,7 @@ export function HeroStage({ sectionRef }: { sectionRef: React.RefObject<HTMLElem
       <HeroPoster className={`absolute inset-0 size-full transition-opacity duration-1000 ${can3D && sceneReady ? 'opacity-0' : 'opacity-100'}`} />
       {can3D && sceneReady && (
         <div className="fade-in absolute inset-0">
-          <HeroScene progressRef={progressRef} pointerRef={pointerRef} active={visible} offsetX={wide ? 3.4 : 0} />
+          <HeroScene progressRef={progressRef} pointerRef={pointerRef} active={visible} offsetX={wide ? 3.0 : 0} />
         </div>
       )}
       {/* Abdunkelung links, damit der Text auf jeder Bildschirmbreite lesbar bleibt */}

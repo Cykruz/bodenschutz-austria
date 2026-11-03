@@ -37,9 +37,10 @@ function buildPoses(): Pose[] {
       p: new THREE.Vector3((col - 1) * 2.5, 0, (row - 1) * 1.3),
       r: new THREE.Euler(0, 0, 0),
     };
+    // Palettenstapel: Platten liegen knapp übereinander, nur leicht versetzt und verdreht wie frisch abgeladen
     const stack = {
-      p: new THREE.Vector3((rnd(i, 1) - 0.5) * 1.6, 0.35 + i * 0.3 + rnd(i, 2) * 0.25, (rnd(i, 3) - 0.5) * 1.2),
-      r: new THREE.Euler((rnd(i, 4) - 0.5) * 0.35, (rnd(i, 5) - 0.5) * 1.2, (rnd(i, 6) - 0.5) * 0.3),
+      p: new THREE.Vector3((rnd(i, 1) - 0.5) * 0.22, 0.06 + i * 0.135, (rnd(i, 3) - 0.5) * 0.18),
+      r: new THREE.Euler((rnd(i, 4) - 0.5) * 0.03, (rnd(i, 5) - 0.5) * 0.14, (rnd(i, 6) - 0.5) * 0.025),
     };
     poses.push({ stack, laid, phase: rnd(i, 7) * Math.PI * 2 });
   }
@@ -59,14 +60,14 @@ function Plates({ progressRef, offsetX = 0 }: Pick<HeroSceneProps, 'progressRef'
       if (!g) return;
       // Jede Platte ordnet sich leicht versetzt ein (Reihenfolge von oben nach unten)
       const local = smooth(clamp01((p - i * 0.04) / 0.7));
-      const floatY = (1 - local) * Math.sin(t * 0.7 + pose.phase) * 0.08;
+      const floatY = (1 - local) * Math.sin(t * 0.7 + pose.phase) * 0.012;
       g.position.set(
         lerp(pose.stack.p.x, pose.laid.p.x, local),
         lerp(pose.stack.p.y, pose.laid.p.y, local) + floatY,
         lerp(pose.stack.p.z, pose.laid.p.z, local),
       );
       g.rotation.set(
-        lerp(pose.stack.r.x, pose.laid.r.x, local) + (1 - local) * Math.sin(t * 0.5 + pose.phase) * 0.03,
+        lerp(pose.stack.r.x, pose.laid.r.x, local) + (1 - local) * Math.sin(t * 0.5 + pose.phase) * 0.004,
         lerp(pose.stack.r.y, pose.laid.r.y, local),
         lerp(pose.stack.r.z, pose.laid.r.z, local),
       );
