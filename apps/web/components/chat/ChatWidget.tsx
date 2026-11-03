@@ -5,6 +5,7 @@ import { Bot, MessageCircle, SendHorizontal, X } from 'lucide-react';
 import { chat, describeError } from '@/lib/api';
 import { PRINCIPLES } from '@/lib/site';
 import type { ChatMessage } from '@/lib/types';
+import { CHAT_OPEN_EVENT } from '@/components/home/ChatOpenButton';
 
 const SESSION_KEY = 'bsa_chat_session';
 const HISTORY_KEY = 'bsa_chat_history';
@@ -53,6 +54,13 @@ export function ChatWidget() {
       inputRef.current?.focus();
     }
   }, [open, entries, loading]);
+
+  useEffect(() => {
+    // „Fragen stellen“-Knöpfe auf der Seite öffnen das Panel
+    const onOpen = () => setOpen(true);
+    window.addEventListener(CHAT_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(CHAT_OPEN_EVENT, onOpen);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -107,8 +115,9 @@ export function ChatWidget() {
       >
         <span aria-hidden className="pulse-ring pointer-events-none absolute inset-0 rounded-full border-4 border-terracotta" />
         <MessageCircle className="size-6" aria-hidden />
-        <span>Fragen an den Berater</span>
-        <span className="rounded-full bg-akzent px-2 py-0.5 text-xs font-extrabold text-gruen-dunkel" aria-label="Künstliche Intelligenz">
+        <span>Fragen</span>
+        <span aria-hidden>·</span>
+        <span className="rounded-full bg-akzent px-2 py-0.5 text-xs font-extrabold text-gruen-dunkel" aria-label="KI-Assistent">
           KI
         </span>
       </button>
@@ -224,7 +233,7 @@ export function ChatWidget() {
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-terracotta text-white hover:bg-terracotta-dunkel disabled:opacity-50"
+                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-terracotta text-gruen-dunkel hover:bg-akzent disabled:opacity-50"
                 aria-label="Frage senden"
               >
                 <SendHorizontal className="size-5" aria-hidden />

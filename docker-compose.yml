@@ -1,0 +1,117 @@
+# Bodenschutz Austria – Produktion: API, Website und Caddy (automatisches HTTPS über Let's Encrypt).
+# Konfiguration kommt aus der .env im selben Ordner (Vorlage: .env.example, Abschnitt „Betrieb mit Docker“).
+# Standard: Images werden lokal gebaut (docker compose up -d --build). Alternativ fertige Images von ghcr.io
+# ziehen: API_IMAGE/WEB_IMAGE in der .env setzen und "docker compose pull && docker compose up -d" ausführen.
+
+name: bodenschutz
+
+services:
+  api:
+    image: ${API_IMAGE:-bodenschutz-api:local}
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: "4000"
+      DATABASE_URL: file:/app/apps/api/data/app.db
+      PUBLIC_WEB_URL: https://${DOMAIN:?DOMAIN in .env setzen}
+      PUBLIC_API_URL: https://${DOMAIN}
+    volumes:
+      - api_data:/app/apps/api/data
+    expose:
+      - "4000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  web:
+    image: ${WEB_IMAGE:-bodenschutz-web:local}
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        API_INTERNAL_URL: http://api:4000
+        NEXT_PUBLIC_SITE_URL: https://${DOMAIN}
+        NEXT_PUBLIC_ANDROID_APK_URL: ${NEXT_PUBLIC_ANDROID_APK_URL:-}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:-info@bodenschutz-austria.at}
+      # Leer = Verwaltung von überall erreichbar (Login schützt). Mehrere Einträge mit Leerzeichen trennen, z. B. "203.0.113.5 198.51.100.0/24"
+      ADMIN_ALLOW_IPS: ${ADMIN_ALLOW_IPS:-0.0.0.0/0 ::/0}
+      # Vorab-Zugang für den Testbetrieb (leer = Seite offen). Hash erzeugen:
+      #   docker run --rm caddy:2-alpine caddy hash-password --plaintext 'DEIN-PASSWORT'
+      # In der .env jedes $ des Hashs als $$ schreiben (Compose-Interpolation).
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:-}
+      BASIC_AUTH_HASH: ${BASIC_AUTH_HASH:-}
+    # Legt bei gesetztem BASIC_AUTH_USER den Schnipsel für die Passwortabfrage an und startet dann Caddy
+    command:
+      - sh
+      - -c
+      - |
+        mkdir -p /etc/caddy/gate.d
+        if [ -n "$$BASIC_AUTH_USER" ] && [ -n "$$BASIC_AUTH_HASH" ]; then
+          printf 'basic_auth @gate {\n\t%s %s\n}\nheader X-Robots-Tag "noindex, nofollow"\n' "$$BASIC_AUTH_USER" "$$BASIC_AUTH_HASH" > /etc/caddy/gate.d/gate.caddy
+          echo "Vorab-Zugang aktiv (Benutzer $$BASIC_AUTH_USER)"
+        else
+          rm -f /etc/caddy/gate.d/gate.caddy
+        fi
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  api_data:
+  caddy_data:
+  caddy_config:

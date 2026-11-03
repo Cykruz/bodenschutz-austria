@@ -8,13 +8,18 @@ import { NAV_LINKS, SITE_NAME } from '@/lib/site';
 import { buttonClasses } from '@/components/ui/Button';
 import { Logo } from './Logo';
 
-export interface HeaderProps {
-  /** Dunkle Variante für die Startseite (liegt über der 3D-Bühne). */
-  dark?: boolean;
-}
+const HOME_LINKS = [
+  { href: '/#loesungen', label: 'Lösungen' },
+  { href: '/#produkt', label: 'Produkt' },
+  { href: '/#sogehts', label: 'So geht’s' },
+  { href: '/#app', label: 'App' },
+  { href: '/#faq', label: 'Fragen' },
+] as const;
 
-export function Header({ dark = false }: HeaderProps) {
+export function Header() {
   const pathname = usePathname();
+  // Startseite: Kopfzeile liegt über der dunklen 3D-Bühne (fixiert, transparent, heller Text)
+  const dark = pathname === '/';
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -25,21 +30,27 @@ export function Header({ dark = false }: HeaderProps) {
   }
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    // Startseite: Kopfzeile bleibt transparent, solange der gepinnte Hero im Bild ist; sonst ab 24 px Scrollweg
+    const onScroll = () => {
+      const hero = dark ? document.getElementById('top') : null;
+      const limit = hero ? Math.max(24, hero.offsetHeight - window.innerHeight - 24) : 24;
+      setScrolled(window.scrollY > limit);
+    };
     const raf = window.requestAnimationFrame(onScroll);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.cancelAnimationFrame(raf);
       window.removeEventListener('scroll', onScroll);
     };
-  }, []);
+  }, [dark]);
 
   const onDark = dark && !scrolled && !open;
   const textColor = onDark ? 'text-sand' : 'text-gruen';
   const shell = onDark ? 'bg-transparent' : 'bg-sand/90 backdrop-blur border-b border-linie/70';
+  const links = dark ? HOME_LINKS : NAV_LINKS.filter((l) => l.href !== '/anfrage');
 
   return (
-    <header className={`sticky top-0 z-40 transition-colors ${shell}`}>
+    <header className={`${dark ? 'fixed inset-x-0' : 'sticky'} top-0 z-40 transition-colors ${shell}`}>
       <a
         href="#inhalt"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-full focus:bg-terracotta focus:px-4 focus:py-2 focus:text-white"
@@ -53,13 +64,13 @@ export function Header({ dark = false }: HeaderProps) {
         </Link>
 
         <nav aria-label="Hauptnavigation" className="hidden items-center gap-2 md:flex">
-          {NAV_LINKS.filter((l) => l.href !== '/anfrage').map((l) => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               aria-current={pathname === l.href ? 'page' : undefined}
-              className={`touch flex items-center rounded-full px-4 font-semibold hover:bg-salbei/60 aria-[current=page]:underline aria-[current=page]:underline-offset-8 ${textColor} ${
-                onDark ? 'hover:bg-white/10' : ''
+              className={`touch flex items-center rounded-full px-4 font-semibold aria-[current=page]:underline aria-[current=page]:underline-offset-8 ${textColor} ${
+                onDark ? 'hover:bg-white/10' : 'hover:bg-salbei/60'
               }`}
             >
               {l.label}
@@ -85,7 +96,7 @@ export function Header({ dark = false }: HeaderProps) {
       {open && (
         <nav id="mobile-nav" aria-label="Mobile Navigation" className="border-t border-linie bg-sand md:hidden">
           <ul className="container-site flex flex-col gap-1 py-4">
-            {NAV_LINKS.map((l) => (
+            {[...(dark ? HOME_LINKS : []), ...NAV_LINKS].map((l) => (
               <li key={l.href}>
                 <Link
                   href={l.href}

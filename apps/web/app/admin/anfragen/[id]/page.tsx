@@ -43,6 +43,7 @@ export default function AnfrageDetailPage({ params }: PageProps<'/admin/anfragen
 
   const calc = parseJson<CalculationResult | null>(data.calculation, null);
   const analysis = parseJson<PhotoAnalysis | null>(data.photoAnalysis ?? null, null);
+  const hasPhoto = Boolean(data.hasPhoto || data.photoPath);
   const reasons = parseJson<string[]>(data.reviewReasons, []);
   const closed = data.status === 'SENT' || data.status === 'REJECTED';
 
@@ -127,10 +128,10 @@ export default function AnfrageDetailPage({ params }: PageProps<'/admin/anfragen
           </Panel>
 
           <Panel title="Foto und Einschätzung">
-            {data.photoPath || analysis ? (
+            {hasPhoto || analysis ? (
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
-                  {data.photoPath && !photoFailed ? (
+                  {hasPhoto && !photoFailed ? (
                     // eslint-disable-next-line @next/next/no-img-element -- geschützter API-Pfad mit Cookie
                     <img src={admin.photoUrl(data.id)} alt={`Foto des Untergrunds zur Anfrage von ${data.customerName}`} className="w-full rounded-2xl object-cover" onError={() => setPhotoFailed(true)} />
                   ) : (

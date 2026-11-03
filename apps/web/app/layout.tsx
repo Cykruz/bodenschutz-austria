@@ -4,16 +4,17 @@ import { connection } from 'next/server';
 import { SITE_CLAIM, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 import './globals.css';
 
+// Nur der Latin-Teil (deckt Umlaute und ß ab) und nur die genutzten Schnitte: weniger vorgeladene Schriftdateien, früherer LCP.
 const nunito = Nunito({
   variable: '--font-nunito',
-  subsets: ['latin', 'latin-ext'],
-  weight: ['700', '800'],
+  subsets: ['latin'],
+  weight: ['800'],
   display: 'swap',
 });
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
-  subsets: ['latin', 'latin-ext'],
+  subsets: ['latin'],
   weight: ['400', '600', '700'],
   display: 'swap',
 });

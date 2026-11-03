@@ -1,0 +1,77 @@
+# Bodenschutz Austria – Entwicklung/Test im Container: API, Website und MailDev, ohne TLS.
+# Start: docker compose -f docker-compose.dev.yml up -d --build
+# Danach: Website http://localhost:3000, API http://localhost:4000/api/health, Test-Postfach http://localhost:1080
+
+name: bodenschutz-dev
+
+services:
+  maildev:
+    image: maildev/maildev:2.2.1
+    restart: unless-stopped
+    command: ["--ip", "0.0.0.0", "--web-ip", "0.0.0.0", "--smtp", "1025", "--web", "1080"]
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:1080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: bodenschutz-api:dev
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: "4000"
+      DATABASE_URL: file:/app/apps/api/data/app.db
+      PUBLIC_WEB_URL: http://localhost:3000
+      PUBLIC_API_URL: http://localhost:4000
+      SMTP_HOST: maildev
+      SMTP_PORT: "1025"
+      SMTP_SECURE: "false"
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      IMAP_HOST: ""
+    ports:
+      - "4000:4000"
+    volumes:
+      - api_dev_data:/app/apps/api/data
+    depends_on:
+      - maildev
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  web:
+    image: bodenschutz-web:dev
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        API_INTERNAL_URL: http://api:4000
+        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        NEXT_PUBLIC_ANDROID_APK_URL: ${NEXT_PUBLIC_ANDROID_APK_URL:-}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  api_dev_data:

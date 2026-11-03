@@ -1,0 +1,113 @@
+name: Deploy
+
+# Bei einem Versions-Tag (v1.0.0, v1.2.3 …) oder manuell: Images bauen, nach GitHub Container Registry pushen,
+# optional per SSH auf dem Server aktualisieren (nur wenn die Secrets DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY gesetzt sind).
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Nach dem Build per SSH auf den Server ausrollen'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/cykruz/bodenschutz-api
+  WEB_IMAGE: ghcr.io/cykruz/bodenschutz-web
+
+jobs:
+  images:
+    name: Images bauen und pushen
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version bestimmen
+        id: meta
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Bei GHCR anmelden
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: API-Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: |
+            ${{ env.API_IMAGE }}:${{ steps.meta.outputs.version }}
+            ${{ env.API_IMAGE }}:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Web-Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          build-args: |
+            API_INTERNAL_URL=http://api:4000
+            NEXT_PUBLIC_SITE_URL=${{ vars.PUBLIC_SITE_URL || 'https://bodenschutz-austria.at' }}
+            NEXT_PUBLIC_ANDROID_APK_URL=${{ vars.ANDROID_APK_URL || '' }}
+          tags: |
+            ${{ env.WEB_IMAGE }}:${{ steps.meta.outputs.version }}
+            ${{ env.WEB_IMAGE }}:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+  deploy:
+    name: Auf Server ausrollen (optional)
+    needs: images
+    runs-on: ubuntu-latest
+    # Secrets lassen sich in "if" nicht direkt prüfen, daher über ein Env-Mapping
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/bodenschutz' }}
+    steps:
+      - name: Prüfen, ob Deploy konfiguriert ist
+        id: check
+        run: |
+          if [[ -n "${DEPLOY_HOST}" && -n "${DEPLOY_USER}" && -n "${DEPLOY_SSH_KEY}" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Kein SSH-Deploy: Secrets DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY nicht (vollständig) gesetzt."
+          fi
+
+      - name: SSH-Schlüssel einrichten
+        if: steps.check.outputs.configured == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${DEPLOY_SSH_KEY}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${DEPLOY_HOST}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Update auf dem Server ausführen
+        if: steps.check.outputs.configured == 'true'
+        run: |
+          ssh -i ~/.ssh/deploy_key "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "cd '${DEPLOY_PATH}' && USE_REGISTRY=1 ./deploy/update.sh main"

@@ -52,4 +52,40 @@ jobs:
       - name: Build
         run: npm --prefix apps/api run build
 
-  # Erweiterbar: Jobs für apps/web (next build, typecheck) und apps/mobile (tsc) nach gleichem Muster.
+  web:
+    name: apps/web
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_SITE_URL: https://bodenschutz-austria.at
+      API_INTERNAL_URL: http://localhost:4000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install
+        run: npm --prefix apps/web install
+      - name: Typecheck
+        run: npm --prefix apps/web run typecheck
+      - name: Lint
+        run: npm --prefix apps/web run lint
+      - name: Build
+        run: npm --prefix apps/web run build
+
+  mobile:
+    name: apps/mobile
+    runs-on: ubuntu-latest
+    env:
+      EXPO_NO_TELEMETRY: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install
+        run: npm --prefix apps/mobile install
+      - name: Typecheck
+        run: npm --prefix apps/mobile run typecheck
+      - name: Lint
+        run: npm --prefix apps/mobile run lint

@@ -21,10 +21,13 @@ export function ClipPlatte({ className = '', caption, tone = 'sand' }: { classNa
         {/* Platten */}
         {plates.map((x, i) => (
           <g key={x} className={`cp-plate cp-plate-${i + 1}`} style={{ transformOrigin: `${x + 36}px 152px` }}>
-            <rect x={x} y="140" width="72" height="20" rx="4" fill="#D97B2A" />
-            <rect x={x} y="140" width="72" height="6" rx="3" fill="#F0A85A" />
-            {[8, 24, 40, 56].map((dx) => (
-              <rect key={dx} x={x + dx} y="148" width="9" height="8" rx="1.5" fill="#B9621C" />
+            <rect x={x} y="140" width="72" height="20" rx="4" fill="#2B3135" />
+            <rect x={x} y="140" width="72" height="7" rx="3" fill="#3D454B" />
+            {[6, 22, 38, 54].map((dx) => (
+              <rect key={dx} x={x + dx} y="142" width="11" height="3" rx="1.5" fill="#5A636A" />
+            ))}
+            {[14, 30, 46].map((dx) => (
+              <rect key={dx} x={x + dx} y="151" width="11" height="3" rx="1.5" fill="#1F2427" />
             ))}
           </g>
         ))}

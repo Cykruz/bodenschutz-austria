@@ -3,15 +3,16 @@
 import { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { lerp, Plate, SceneLights } from './Plate';
+import { lerp, Plate, SceneLights, type PlateVariant } from './Plate';
 
 export interface ProductSceneProps {
   /** Zielrotation (rad) um Y und X, von Drag oder Tasten gesetzt. */
   rotationRef: React.RefObject<{ y: number; x: number; auto: boolean }>;
   active: boolean;
+  variant?: PlateVariant;
 }
 
-function Turntable({ rotationRef }: Pick<ProductSceneProps, 'rotationRef'>) {
+function Turntable({ rotationRef, variant }: Pick<ProductSceneProps, 'rotationRef' | 'variant'>) {
   const group = useRef<THREE.Group>(null);
   useFrame((_, delta) => {
     const g = group.current;
@@ -23,12 +24,12 @@ function Turntable({ rotationRef }: Pick<ProductSceneProps, 'rotationRef'>) {
   });
   return (
     <group ref={group} rotation={[0.35, 0.6, 0]}>
-      <Plate />
+      <Plate variant={variant} />
     </group>
   );
 }
 
-export default function ProductScene({ rotationRef, active }: ProductSceneProps) {
+export default function ProductScene({ rotationRef, active, variant = 'noppen' }: ProductSceneProps) {
   return (
     <Canvas
       frameloop={active ? 'always' : 'demand'}
@@ -40,7 +41,7 @@ export default function ProductScene({ rotationRef, active }: ProductSceneProps)
       onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
     >
       <SceneLights intensity={1.1} />
-      <Turntable rotationRef={rotationRef} />
+      <Turntable rotationRef={rotationRef} variant={variant} />
     </Canvas>
   );
 }
