@@ -12,7 +12,9 @@ const LINES = ['Fester Boden.', 'Genau dort, wo du', 'ihn brauchst.'];
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
   return (
-    <section ref={ref} id="top" className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden bg-gruen text-sand" aria-labelledby="hero-title">
+    // Der Hero bleibt beim Scrollen kurz stehen (sticky), während sich der Plattenstapel zur Fläche auffächert; danach scrollt die Seite weiter.
+    <section ref={ref} id="top" className="relative h-[150svh] bg-gruen text-sand lg:h-[180svh]" aria-labelledby="hero-title">
+      <div className="sticky top-0 flex min-h-[100svh] flex-col justify-center overflow-hidden">
       <HeroStage sectionRef={ref} />
       <div className="container-site relative flex min-h-[100svh] flex-col justify-center gap-7 pt-28 pb-24 sm:gap-8">
         <p className="rise d1 text-xs font-bold tracking-[0.3em] text-akzent uppercase sm:text-sm">Bodenschutzplatten · classicXtreme · Österreich</p>
@@ -51,6 +53,7 @@ export function Hero() {
             </svg>
           </a>
         </div>
+      </div>
       </div>
     </section>
   );

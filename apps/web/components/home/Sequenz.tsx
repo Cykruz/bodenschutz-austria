@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useRef, useState } from 'react';
 import { useMotionValueEvent, useReducedMotion, useScroll } from 'motion/react';
-import { useCanRender3D } from '@/components/three/support';
+import { useCanRender3D, useMediaQuery } from '@/components/three/support';
 import { ClipPlatte } from '@/components/clips/ClipPlatte';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 
@@ -22,8 +22,55 @@ const SequenzScene = dynamic(() => import('@/components/three/SequenzScene'), { 
 export function Sequenz() {
   const can3D = useCanRender3D();
   const reduce = useReducedMotion();
-  if (can3D && !reduce) return <Pinned />;
+  const wide = useMediaQuery('(min-width: 1024px)');
+  if (can3D && !reduce) return wide ? <Pinned /> : <Flow />;
   return <Fallback />;
+}
+
+/** Handy und Tablet: nicht gepinnt. Die Szene scrollt normal mit und spielt die drei Phasen ab, während sie durchs Bild wandert. */
+function Flow() {
+  const box = useRef<HTMLDivElement>(null);
+  const progressRef = useRef(0);
+  const invalidateRef = useRef<() => void>(() => {});
+  const [phase, setPhase] = useState(0);
+  const { scrollYProgress } = useScroll({ target: box, offset: ['start 90%', 'end 10%'] });
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    progressRef.current = v;
+    invalidateRef.current();
+    const next = v < 0.33 ? 0 : v < 0.66 ? 1 : 2;
+    setPhase((p) => (p === next ? p : next));
+  });
+  const registerInvalidate = useCallback((fn: () => void) => {
+    invalidateRef.current = fn;
+  }, []);
+  const current = PHASES[phase] ?? PHASES[0];
+  return (
+    <section id="highlight" className="bg-salbei py-16 sm:py-24" aria-labelledby="sequenz-title">
+      <div className="container-site flex flex-col gap-8">
+        <SectionHeading eyebrow="Das Highlight" title={<span id="sequenz-title">Verlegen. Belasten. Aufnehmen.</span>} text="Scroll weiter: Die Platten werden verlegt, der LKW fährt drüber, die Platten kommen wieder weg." />
+        <div ref={box} className="relative aspect-[4/3] w-full overflow-hidden rounded-[24px]">
+          <SequenzScene progressRef={progressRef} registerInvalidate={registerInvalidate} />
+          <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-2xl bg-sand/90 px-4 py-3 backdrop-blur" aria-live="polite">
+            <p className="text-xs font-bold tracking-[0.2em] text-terracotta-text uppercase">
+              {current.n} {current.label}
+            </p>
+            <p className="font-heading text-lg font-extrabold text-gruen">{current.title}</p>
+          </div>
+        </div>
+        <ol className="grid gap-4 sm:grid-cols-3" aria-label="Drei Phasen">
+          {PHASES.map((p, i) => (
+            <li key={p.n} className={`rounded-2xl border-l-4 bg-white p-4 ${phase === i ? 'border-terracotta' : 'border-salbei-dunkel'}`} aria-current={phase === i ? 'step' : undefined}>
+              <p className="text-xs font-bold tracking-[0.2em] text-terracotta-text uppercase">
+                {p.n} {p.label}
+              </p>
+              <h3 className="mt-1 text-lg">{p.title}</h3>
+              <p className="mt-1 text-sm text-text">{p.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
 }
 
 function Pinned() {

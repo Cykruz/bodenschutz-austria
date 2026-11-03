@@ -30,14 +30,19 @@ export function Header() {
   }
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    // Startseite: Kopfzeile bleibt transparent, solange der gepinnte Hero im Bild ist; sonst ab 24 px Scrollweg
+    const onScroll = () => {
+      const hero = dark ? document.getElementById('top') : null;
+      const limit = hero ? Math.max(24, hero.offsetHeight - window.innerHeight - 24) : 24;
+      setScrolled(window.scrollY > limit);
+    };
     const raf = window.requestAnimationFrame(onScroll);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.cancelAnimationFrame(raf);
       window.removeEventListener('scroll', onScroll);
     };
-  }, []);
+  }, [dark]);
 
   const onDark = dark && !scrolled && !open;
   const textColor = onDark ? 'text-sand' : 'text-gruen';

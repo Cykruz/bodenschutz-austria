@@ -21,7 +21,8 @@ export function HeroStage({ sectionRef }: { sectionRef: React.RefObject<HTMLElem
   const pointerRef = useRef({ x: 0, y: 0 });
   const [sceneReady, setSceneReady] = useState(false);
 
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
+  // Fortschritt über den gepinnten Bereich: 0 = Stapel, 1 = fertig verlegt (kurz bevor der Hero weiterscrollt)
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] });
   useMotionValueEvent(scrollYProgress, 'change', (v) => {
     progressRef.current = v;
   });
